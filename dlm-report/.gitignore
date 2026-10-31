@@ -1,0 +1,8 @@
+/.quarto/
+/_book/
+*.typ
+!_extensions/**/*.typ
+/_freeze/
+*_files/
+
+**/*.quarto_ipynb

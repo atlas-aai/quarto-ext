@@ -1,0 +1,50 @@
+# Reliability {#sec-reliability}
+
+```{r}
+#| label: setup-reliability
+source("_common.R")
+```
+
+Reliability evidence for diagnostic assessments describes the consistency of classifications rather than the consistency of scale scores. Reliability is reported at the levels at which results are reported: the linkage level, the Essential Element, the conceptual area, and the subject [@thompson2019].
+
+## Methods {#sec-reliability-methods}
+
+Reliability is estimated with simulated retests. For each student, a second administration is simulated from the estimated model parameters and the student's posterior mastery probabilities. The agreement between the observed and simulated classifications is summarized with the correct classification rate and Cohen's $\kappa$. Simulated retests use the item parameters summarized in @tbl-params and shown in @fig-params. Participation counts appear in @tbl-app-sample of @sec-appendix-tables.
+
+## Results {#sec-reliability-results}
+
+@fig-reliability shows the distribution of linkage level reliability by subject. @tbl-reliability summarizes the same results.
+
+```{r}
+#| label: fig-reliability
+#| fig-cap: "Linkage level classification accuracy by subject (simulated)"
+#| fig-alt: "Box plots of classification accuracy for three subjects. Medians are above 0.9 in each subject."
+#| fig-height: 3.8
+set.seed(4)
+rel <- data.frame(
+  subject = rep(c("English language arts", "Mathematics", "Science"), each = 300),
+  acc = c(rbeta(300, 40, 3), rbeta(300, 38, 3.2), rbeta(300, 35, 3))
+)
+ggplot(rel, aes(x = subject, y = acc)) +
+  geom_boxplot(fill = dlm_colors[["mist"]], colour = dlm_colors[["navy"]], width = 0.5,
+               outlier.colour = dlm_colors[["blue"]], outlier.size = 1) +
+  scale_y_continuous(limits = c(0.7, 1)) +
+  labs(x = NULL, y = "Classification accuracy") +
+  theme_dlm()
+```
+
+```{r}
+#| label: tbl-reliability
+#| tbl-cap: "Summary of linkage level reliability by subject (simulated)"
+summ <- aggregate(acc ~ subject, rel, function(x) c(mean(x), quantile(x, c(.1, .5, .9))))
+out <- data.frame(Subject = summ$subject, summ$acc, check.names = FALSE)
+names(out) <- c("Subject", "Mean", "10th pct.", "Median", "90th pct.")
+gt(out) |>
+  fmt_number(-Subject, decimals = 3)
+```
+
+::: {.callout-warning}
+## Interpreting reliability at the linkage level
+
+Linkage level reliability is based on few items. Report users should give more weight to Essential Element and conceptual area reliability when results inform instructional decisions.
+:::

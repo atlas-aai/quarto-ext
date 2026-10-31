@@ -1,0 +1,61 @@
+/*-- scss:defaults --*/
+
+// DLM palette (from the DLM slide template)
+$dlm-navy:   #003459;
+$dlm-blue:   #0051BA;
+$dlm-bright: #2767FF;
+$dlm-sky:    #73CBF2;
+$dlm-mist:   #DDE5ED;
+
+// Semantic tokens used by dlm.scss
+$dlm-ink:          #1B2733;
+$dlm-heading:      $dlm-navy;
+$dlm-accent:       $dlm-blue;
+$dlm-accent-soft:  #E8F0FB;
+$dlm-muted:        #5A6B7B;
+$dlm-border:       $dlm-mist;
+$dlm-surface:      #F6F9FC;
+$dlm-surface-2:    #EDF2F8;
+$dlm-table-head:   #EDF2F8;
+$dlm-zebra:        #F8FAFC;
+$dlm-hero-bg:      #FFFFFF;
+$dlm-code-bg:      #F5F8FB;
+$dlm-is-dark:      false;
+
+// Bootstrap / Quarto
+$body-bg:            #FFFFFF;
+$body-color:         $dlm-ink;
+$primary:            $dlm-blue;
+$secondary:          $dlm-muted;
+$info:               $dlm-blue;
+$link-color:         $dlm-blue;
+$link-hover-color:   $dlm-bright;
+$headings-color:     $dlm-navy;
+$text-muted:         $dlm-muted;
+$border-color:       $dlm-border;
+
+$font-family-sans-serif: "Inter", "Aptos", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+$font-family-monospace:  "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+$font-size-root:     17px;
+$line-height-base:   1.65;
+$headings-font-weight: 700;
+$headings-line-height: 1.2;
+
+$navbar-bg:          $dlm-navy;
+$navbar-fg:          #FFFFFF;
+$navbar-hl:          $dlm-sky;
+
+$sidebar-bg:         $dlm-surface;
+$sidebar-fg:         #33475B;
+$sidebar-hl:         $dlm-blue;
+
+$footer-bg:          $dlm-navy;
+$footer-fg:          #D6E2EE;
+
+$code-color:         #8A1F3D;
+$code-bg:            $dlm-code-bg;
+$code-block-bg:      $dlm-code-bg;
+$code-block-border-left: $dlm-sky;
+
+$table-border-color: $dlm-mist;
+$popover-bg:         #FFFFFF;

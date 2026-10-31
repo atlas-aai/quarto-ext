@@ -1,0 +1,64 @@
+title: DLM Report
+author: ATLAS Research and Psychometrics
+version: 0.1.0
+quarto-required: ">=1.9.17"
+contributes:
+  formats:
+    common:
+      filters:
+        - path: dlm-report.lua
+          at: pre-quarto
+        - path: dlm-book-typst.lua
+          at: post-quarto
+      number-sections: true
+      number-depth: 3
+      tbl-cap-location: top
+      fig-cap-location: bottom
+      fig-width: 7
+      fig-height: 4.5
+      fig-dpi: 300
+      lang: en-US
+      # APA 7th edition (Zotero Style Repository), used by both formats
+      csl: apa.csl
+
+    html:
+      theme:
+        light: [html/dlm-light.scss, html/dlm.scss]
+        dark: [html/dlm-dark.scss, html/dlm.scss]
+      template-partials:
+        - html/title-block.html
+      toc: true
+      toc-depth: 3
+      toc-title: On this page
+      code-copy: true
+      code-overflow: wrap
+      anchor-sections: true
+      smooth-scroll: true
+      link-external-newwindow: true
+      reference-location: margin
+      citation-location: document
+      grid:
+        sidebar-width: 290px
+        body-width: 820px
+        margin-width: 270px
+
+    typst:
+      template-partials:
+        - typst/typst-template.typ
+        - typst/typst-show.typ
+        - typst/page.typ
+        - typst/numbering.typ
+        - typst/biblio.typ
+      font-paths:
+        - fonts/ttf
+      papersize: us-letter
+      pdf-standard: ua-1
+      # Format citations with Pandoc and the CSL style, as on the website
+      citeproc: true
+      toc-title: Contents
+      toc: true
+      toc-depth: 2
+      lof: true
+      lot: true
+      fig-format: png
+      keep-typ: false

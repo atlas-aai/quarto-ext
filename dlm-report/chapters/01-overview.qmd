@@ -1,0 +1,59 @@
+# Overview {#sec-overview}
+
+```{r}
+#| label: setup-overview
+source("_common.R")
+```
+
+The Dynamic Learning Maps® (DLM®) Alternate Assessment System assesses student achievement in English language arts, mathematics, and science for students with the most significant cognitive disabilities in grades 3–8 and high school. The purpose of the system is to improve academic experiences and outcomes for these students by setting high, actionable academic expectations and by providing appropriate and effective supports to educators.
+
+This chapter summarizes the theory of action, the intended uses of results, and the organization of the remaining chapters.
+
+## Theory of Action {#sec-theory-of-action}
+
+The theory of action expresses the belief that high expectations for students with the most significant cognitive disabilities, combined with appropriate educational supports, lead to improved academic outcomes. The theory of action guides the design of the system and frames the validity argument [@kane2013].
+
+::: {.callout-tip}
+## Writing tip
+
+Use `@sec-` labels for every chapter and major section. Cross-references then resolve to "Chapter 2" or "Section 3.1" in both the website and the PDF.
+:::
+
+## Intended Uses {#sec-intended-uses}
+
+Results are intended to support the following uses:
+
+1. Report what students know and can do at the end of the year.
+2. Inform instructional planning for the following school year.
+3. Contribute to state accountability models.
+4. Support program evaluation at the school, district, and state levels.
+
+Some uses fall outside the design of the system. Results are not intended to support decisions about individual educator effectiveness.
+
+## Organization of This Manual
+
+@tbl-chapter-guide maps each chapter and appendix of the manual to the source of validity evidence it documents.
+
+```{r}
+#| label: tbl-chapter-guide
+#| tbl-cap: "Chapter guide"
+guide <- data.frame(
+  Chapter = c("1", "2", "3", "4", "A"),
+  Topic = c(
+    "Overview",
+    "Assessment design and development",
+    "Modeling",
+    "Reliability",
+    "Supplemental tables"
+  ),
+  `Primary source of evidence` = c(
+    "Theory of action",
+    "Test content",
+    "Internal structure",
+    "Internal structure",
+    "Participation"
+  ),
+  check.names = FALSE
+)
+gt(guide)
+```

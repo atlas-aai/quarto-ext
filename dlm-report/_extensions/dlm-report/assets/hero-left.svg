@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 200" width="300" height="200" role="presentation" aria-hidden="true">
+<title>DLM corner ornament</title>
+<defs><clipPath id="c"><rect width="300" height="200"/></clipPath></defs>
+<g clip-path="url(#c)">
+<path d="M286.6,-21.0 L154.8,89.5 Q136.4,105.0 121.0,86.6 L10.5,-45.2 Q-5.0,-63.6 13.4,-79.0 L145.2,-189.5 Q163.6,-205.0 179.0,-186.6 L289.5,-54.8 Q305.0,-36.4 286.6,-21.0 Z" fill="none" stroke="#0051BA" stroke-width="1.2"/>
+<path d="M221.6,-26.0 L89.8,84.5 Q71.4,100.0 56.0,81.6 L-54.5,-50.2 Q-70.0,-68.6 -51.6,-84.0 L80.2,-194.5 Q98.6,-210.0 114.0,-191.6 L224.5,-59.8 Q240.0,-41.4 221.6,-26.0 Z" fill="#0051BA" />
+</g>
+</svg>

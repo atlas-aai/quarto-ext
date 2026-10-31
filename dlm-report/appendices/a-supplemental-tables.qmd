@@ -1,0 +1,25 @@
+# Supplemental Tables {#sec-appendix-tables}
+
+```{r}
+#| label: setup-appendix-tables
+source("_common.R")
+```
+
+This appendix demonstrates appendix numbering. Tables and figures in an appendix are numbered with the appendix letter, as in @tbl-app-sample.
+
+```{r}
+#| label: tbl-app-sample
+#| tbl-cap: "Student participation by grade (simulated)"
+set.seed(10)
+grades <- c(3:8, "9", "10", "11", "12")
+part <- data.frame(
+  Grade = grades,
+  Students = sample(7000:9800, length(grades)),
+  Female = runif(length(grades), .31, .36),
+  `English learner` = runif(length(grades), .06, .11),
+  check.names = FALSE
+)
+gt(part) |>
+  fmt_integer(Students) |>
+  fmt_percent(c(Female, `English learner`), decimals = 1)
+```

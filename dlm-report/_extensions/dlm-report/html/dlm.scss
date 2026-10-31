@@ -1,0 +1,487 @@
+/*-- scss:rules --*/
+
+// ---------------------------------------------------------------------------
+// DLM report website
+// Shared rules for the light and dark themes. Colors come from the semantic
+// tokens defined in dlm-light.scss / dlm-dark.scss.
+// ---------------------------------------------------------------------------
+
+body {
+  font-feature-settings: "cv11", "ss03";
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+}
+
+::selection { background: rgba($dlm-sky, 0.35); }
+
+a { text-underline-offset: 0.18em; text-decoration-thickness: 1px; }
+main a:not(.btn):not(.nav-link):not(.anchorjs-link) { text-decoration: none; border-bottom: 1px solid rgba($dlm-accent, 0.25); }
+main a:not(.btn):not(.nav-link):not(.anchorjs-link):hover { border-bottom-color: currentColor; }
+
+:focus-visible { outline: 3px solid $dlm-sky; outline-offset: 2px; border-radius: 4px; }
+
+// Navbar ----------------------------------------------------------------------
+.navbar {
+  border-bottom: 3px solid $dlm-sky;
+  padding-top: 0.55rem;
+  padding-bottom: 0.55rem;
+  .navbar-brand { padding: 0; }
+  .navbar-logo, .navbar-brand img { max-height: 34px; height: 34px; }
+  .nav-link { font-weight: 500; font-size: 0.92rem; letter-spacing: 0.01em; }
+  .nav-link.active { box-shadow: inset 0 -2px 0 $dlm-sky; }
+}
+
+#quarto-search .aa-DetachedSearchButton { border-radius: 999px; }
+
+// Sidebar ---------------------------------------------------------------------
+#quarto-sidebar {
+  border-right: 1px solid $dlm-border;
+  font-size: 0.9rem;
+
+  .sidebar-title, .sidebar-title a {
+    color: $dlm-heading;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    line-height: 1.3;
+  }
+  .sidebar-tools-main a { color: $dlm-accent; }
+
+  .sidebar-item { margin-top: 1px; }
+  .sidebar-item-container .text-start,
+  .sidebar-link {
+    border-radius: 6px;
+  }
+  .sidebar-link {
+    padding: 0.28rem 0.6rem;
+    transition: background-color 120ms ease;
+    &:hover { background: $dlm-surface-2; text-decoration: none; }
+  }
+  .sidebar-link.active {
+    color: $dlm-accent;
+    font-weight: 600;
+    background: $dlm-accent-soft;
+    box-shadow: inset 3px 0 0 $dlm-accent;
+  }
+  .menu-text:has(> .chapter-number) { display: inline-flex; gap: 0.45rem; }
+  .sidebar-item .chapter-number { color: $dlm-muted; font-variant-numeric: tabular-nums; min-width: 1.1em; }
+  .sidebar-link.active .chapter-number { color: inherit; }
+  // Entries under a section heading align and size like top-level chapters
+  .sidebar-section { padding-left: 0; }
+  .sidebar-section .sidebar-item { font-size: inherit; }
+  // Section headings (e.g., "Appendices") only; their child entries match chapters
+  .sidebar-item-section > .sidebar-item-container > .sidebar-item-text {
+    color: $dlm-muted;
+    font-weight: 600;
+  }
+}
+
+// Breadcrumbs (mobile header): meet the WCAG 2.2 24px minimum target size
+.quarto-page-breadcrumbs a {
+  display: inline-block;
+  min-height: 24px;
+  line-height: 24px;
+}
+
+// Chapter title block ---------------------------------------------------------
+#title-block-header.quarto-title-block.default {
+  margin-bottom: 2rem;
+  .quarto-title::after {
+    content: "";
+    display: block;
+    width: 56px;
+    height: 4px;
+    border-radius: 2px;
+    background: $dlm-sky;
+    margin-top: 1.1rem;
+  }
+}
+
+h1.title {
+  color: $dlm-heading;
+  font-weight: 750;
+  letter-spacing: -0.02em;
+  font-size: clamp(2rem, 1.4rem + 2.2vw, 2.85rem);
+  line-height: 1.12;
+  margin-top: 0.5rem;
+
+  .chapter-number {
+    display: block;
+    font-size: 0.8rem;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: $dlm-accent;
+    margin-bottom: 0.6rem;
+    &::before { content: attr(data-dlm-label) "\00a0"; }
+  }
+  .chapter-title { display: block; }
+}
+
+.quarto-title .subtitle { color: $dlm-accent; font-weight: 500; }
+
+// Chapter blurb ({blurb="..."} on a level-1 heading)
+.dlm-blurb p {
+  font-size: 1.2rem;
+  font-style: italic;
+  color: $dlm-muted;
+  line-height: 1.55;
+  margin: -0.75rem 0 2rem;
+}
+#title-block-header .dlm-blurb p { margin: 0.9rem 0 0; max-width: 40rem; }
+
+// Section headings ------------------------------------------------------------
+h2, .h2 {
+  font-size: 1.6rem;
+  margin-top: 2.8rem;
+  margin-bottom: 0.9rem;
+  padding-bottom: 0;
+  border-bottom: none;
+  letter-spacing: -0.015em;
+}
+h3, .h3 { font-size: 1.25rem; margin-top: 2rem; letter-spacing: -0.01em; }
+h4, .h4 { font-size: 1.05rem; margin-top: 1.6rem; color: $dlm-accent; }
+h5, .h5, h6, .h6 { font-size: 1rem; margin-top: 1.4rem; }
+
+.header-section-number { color: inherit; margin-right: 0.35em; font-variant-numeric: tabular-nums; }
+
+main p, main li { max-width: 72ch; }
+
+// Tables ----------------------------------------------------------------------
+.cell-output-display:has(> table), .cell-output-display:has(> .table),
+.quarto-float:has(table) { overflow-x: auto; }
+
+main table, main .table {
+  font-size: 0.88rem;
+  font-variant-numeric: tabular-nums lining-nums;
+  border-collapse: collapse;
+  border-bottom: 2px solid $dlm-heading;
+  margin-bottom: 0.5rem;
+  --bs-table-bg: transparent;
+  // Bootstrap stripes with an inset box-shadow that hides the hover color;
+  // the zebra rows below handle striping for all tables instead
+  --bs-table-striped-bg: transparent;
+  color: $dlm-ink;
+
+  thead th, thead td {
+    background: $dlm-table-head;
+    color: $dlm-heading;
+    font-weight: 650;
+    border-bottom: 2px solid $dlm-heading !important;
+    border-top: none;
+    vertical-align: bottom;
+    white-space: nowrap;
+  }
+  tbody tr:nth-child(even) > * { background: $dlm-zebra; }
+  tbody tr:hover > * { background: $dlm-accent-soft; }
+  td, th { padding: 0.42rem 0.75rem; border-color: $dlm-border; }
+  > :not(caption) > * > * { border-bottom-width: 1px; }
+}
+
+// gt tables -------------------------------------------------------------------
+// gt scopes its default CSS to each table's id, which outranks the rules above,
+// so these restore the report design (and dark mode) for every gt table.
+// Inline styles from gt::tab_style() still win over these.
+main div:has(> table.gt_table) { padding: 0 !important; }
+main .gt_table {
+  width: 100% !important;
+  margin: 0 0 0.5rem !important;
+  font-family: inherit !important;
+  font-size: 0.88rem !important;
+  line-height: inherit !important;
+  color: $dlm-ink !important;
+  background-color: transparent !important;
+  border-top: none !important;
+  border-bottom: 2px solid $dlm-heading !important;
+
+  .gt_heading, .gt_title, .gt_subtitle,
+  .gt_stub, .gt_stub_row_group, .gt_summary_row, .gt_grand_summary_row,
+  .gt_footnotes, .gt_sourcenotes {
+    background-color: transparent !important;
+    color: inherit !important;
+    border-color: $dlm-border !important;
+  }
+  .gt_footnote, .gt_sourcenote { color: $dlm-muted !important; font-size: 0.85em !important; }
+  .gt_col_headings, .gt_table_body { border-top: none !important; border-bottom: none !important; }
+  .gt_col_heading, .gt_column_spanner_outer {
+    background-color: $dlm-table-head !important;
+    color: $dlm-heading !important;
+    font-weight: 650 !important;
+  }
+  .gt_col_heading {
+    padding: 0.42rem 0.75rem !important;
+    border-bottom: 2px solid $dlm-heading !important;
+  }
+  .gt_column_spanner { border-bottom-color: $dlm-heading !important; }
+  .gt_group_heading, .gt_empty_group_heading {
+    background-color: $dlm-surface-2 !important;
+    color: $dlm-heading !important;
+    font-weight: 650 !important;
+    border-color: $dlm-border !important;
+  }
+  .gt_row {
+    padding: 0.42rem 0.75rem !important;
+    border-top: none !important;
+    border-bottom: 1px solid $dlm-border !important;
+  }
+  .gt_striped { background-color: $dlm-zebra !important; }
+}
+
+// Captions --------------------------------------------------------------------
+figcaption, caption, .figure-caption, .quarto-float-caption, .quarto-float-caption-top {
+  color: $dlm-muted;
+  font-size: 0.9rem;
+  text-align: left;
+  caption-side: top;
+}
+.quarto-float figcaption, .quarto-float-caption-top, .quarto-float-caption-bottom,
+.quarto-figure-center > figure > figcaption { text-align: left !important; }
+.dlm-cap-label {
+  color: $dlm-heading;
+  font-weight: 700;
+  margin-right: 0.6em;
+}
+.quarto-float { margin: 1.75rem 0; }
+// Quarto nests a figure.quarto-float inside div.quarto-float; overflow on the
+// outer one stops the margins collapsing, so space the outer one only
+.quarto-float .quarto-float { margin: 0; }
+.quarto-figure img, .cell-output-display img {
+  border-radius: 8px;
+}
+
+// Callouts --------------------------------------------------------------------
+.callout {
+  border-radius: 10px;
+  border-left-width: 4px !important;
+  overflow: hidden;
+  margin: 1.5rem 0;
+  .callout-header { font-weight: 650; }
+  .callout-title-container { font-weight: 650; color: $dlm-heading; }
+}
+
+// Code ------------------------------------------------------------------------
+div.sourceCode, pre.sourceCode {
+  border-radius: 8px;
+  border: 1px solid $dlm-border;
+}
+code { font-size: 0.88em; }
+p code:not(.sourceCode), li code:not(.sourceCode) {
+  background: $dlm-code-bg;
+  border-radius: 4px;
+  padding: 0.1em 0.35em;
+}
+
+// Equations -------------------------------------------------------------------
+.math.display { overflow-x: auto; overflow-y: hidden; }
+
+// Margin TOC ------------------------------------------------------------------
+#TOC, nav[role="doc-toc"] {
+  font-size: 0.85rem;
+  h2 {
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: $dlm-muted;
+    font-weight: 700;
+    margin-top: 0;
+  }
+  .nav-link { color: $dlm-muted; }
+  .nav-link.active { color: $dlm-accent; font-weight: 600; border-left-color: $dlm-accent; }
+  .header-section-number { color: inherit; }
+}
+
+// Page navigation -------------------------------------------------------------
+.page-navigation {
+  margin-top: 3.5rem;
+  .nav-page a {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.8rem 1.1rem;
+    border: 1px solid $dlm-border;
+    border-radius: 10px;
+    color: $dlm-heading;
+    font-weight: 600;
+    transition: border-color 120ms ease, background-color 120ms ease;
+    &:hover { border-color: $dlm-accent; background: $dlm-surface; text-decoration: none; }
+  }
+}
+
+// Footer ----------------------------------------------------------------------
+.nav-footer {
+  border-top: 3px solid $dlm-sky;
+  font-size: 0.85rem;
+  min-height: 4rem;
+  a { color: #FFFFFF; }
+}
+
+// References ------------------------------------------------------------------
+#refs .csl-entry, div.csl-entry {
+  padding-left: 1.5em;
+  text-indent: -1.5em;
+  margin-bottom: 0.6em;
+}
+
+// Cover / home page hero ------------------------------------------------------
+#title-block-header.dlm-cover {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+  background: $dlm-hero-bg;
+  border: 1px solid $dlm-border;
+  border-radius: 20px;
+  padding: clamp(5.5rem, 9vw, 7rem) clamp(1.5rem, 5vw, 3.25rem) clamp(2rem, 5vw, 3rem);
+  margin: 0.5rem 0 3rem;
+  min-height: 420px;
+
+  .dlm-cover-ornament {
+    position: absolute;
+    top: 0;
+    background-repeat: no-repeat;
+    background-size: contain;
+    z-index: -1;
+    pointer-events: none;
+  }
+  .dlm-cover-ornament-left {
+    left: 0;
+    width: 230px;
+    height: 154px;
+    background-position: top left;
+  }
+  .dlm-cover-ornament-right {
+    right: 0;
+    width: 300px;
+    height: 324px;
+    background-position: top right;
+  }
+
+  .dlm-cover-inner { max-width: 31rem; position: relative; }
+
+  .dlm-eyebrow {
+    margin: 0 0 0.8rem;
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: $dlm-accent;
+  }
+
+  h1.title {
+    font-size: clamp(2.3rem, 1.5rem + 3vw, 3.4rem);
+    margin: 0;
+    letter-spacing: -0.025em;
+  }
+  .subtitle {
+    font-size: clamp(1.15rem, 1rem + 0.6vw, 1.45rem);
+    margin: 0.75rem 0 0;
+    color: $dlm-accent;
+  }
+
+  .dlm-cover-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.25rem 1.1rem;
+    margin-top: 1.6rem;
+    padding-top: 1.1rem;
+    position: relative;
+    color: $dlm-muted;
+    font-size: 0.95rem;
+    &::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 56px;
+      height: 4px;
+      border-radius: 2px;
+      background: $dlm-sky;
+    }
+    .dlm-cover-authors { color: $dlm-ink; font-weight: 500; flex-basis: 100%; }
+  }
+
+  .dlm-cover-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    margin-top: 1.75rem;
+  }
+
+  .dlm-cite {
+    margin-top: 1.5rem;
+    font-size: 0.88rem;
+    color: $dlm-muted;
+    summary {
+      cursor: pointer;
+      color: $dlm-heading;
+      font-weight: 600;
+      width: fit-content;
+    }
+    p {
+      margin: 0.6rem 0 0;
+      padding: 0.8rem 1rem;
+      background: $dlm-surface;
+      border-left: 3px solid $dlm-sky;
+      border-radius: 0 8px 8px 0;
+      max-width: none;
+    }
+  }
+
+  .dlm-cover-logo {
+    position: absolute;
+    right: clamp(1.25rem, 3vw, 2rem);
+    bottom: clamp(1.25rem, 3vw, 1.75rem);
+    width: 168px;
+    height: 48px;
+    background-repeat: no-repeat;
+    background-position: right bottom;
+    background-size: contain;
+  }
+}
+
+@if $dlm-is-dark {
+  #title-block-header.dlm-cover {
+    .dlm-cover-ornament-right { opacity: 0.55; }
+    .dlm-cover-ornament-left { opacity: 0.85; }
+  }
+}
+
+.dlm-btn {
+  border-radius: 999px;
+  padding: 0.6rem 1.25rem;
+  font-weight: 600;
+  font-size: 0.95rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  line-height: 1.2;
+}
+.dlm-btn-primary {
+  background: $dlm-navy;
+  border: 1px solid $dlm-navy;
+  color: #FFFFFF;
+  &:hover, &:focus { background: $dlm-blue; border-color: $dlm-blue; color: #FFFFFF; }
+}
+@if $dlm-is-dark {
+  .dlm-btn-primary { background: $dlm-blue; border-color: $dlm-blue; }
+  .dlm-btn-primary:hover { background: $dlm-bright; border-color: $dlm-bright; }
+}
+.dlm-btn-secondary {
+  background: transparent;
+  border: 1px solid $dlm-border;
+  color: $dlm-heading;
+  &:hover, &:focus { border-color: $dlm-accent; color: $dlm-accent; background: $dlm-surface; }
+}
+
+@media (max-width: 767.98px) {
+  #title-block-header.dlm-cover {
+    padding-top: 6rem;
+    padding-bottom: 6rem;
+    .dlm-cover-ornament-right { width: 170px; height: 184px; opacity: 0.55; }
+    .dlm-cover-ornament-left { width: 160px; height: 107px; }
+    .dlm-cover-logo { width: 140px; height: 40px; }
+  }
+}
+
+// Print -----------------------------------------------------------------------
+@media print {
+  .dlm-cover-ornament, .dlm-cover-actions { display: none !important; }
+}

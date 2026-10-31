@@ -1,0 +1,100 @@
+# Modeling {#sec-modeling blurb="How the diagnostic classification models are specified, estimated, and evaluated."}
+
+```{r}
+#| label: setup-modeling
+source("_common.R")
+```
+
+The DLM assessments are scored with diagnostic classification models [DCMs\; @rupp2010]. Rather than placing students on a continuous scale, DCMs estimate the probability that a student has mastered each linkage level of each Essential Element. This chapter describes the model, the estimation procedure, and the evaluation of model fit.
+
+## The Model {#sec-model}
+
+Each linkage level is calibrated with a log-linear cognitive diagnosis model [LCDM\; @henson2009] that measures a single attribute. For item $i$ and a student with mastery status $\alpha \in \{0, 1\}$, the probability of a correct response is given by @eq-lcdm.
+
+$$
+P(X_i = 1 \mid \alpha) = \frac{\exp(\lambda_{i,0} + \lambda_{i,1}\alpha)}{1 + \exp(\lambda_{i,0} + \lambda_{i,1}\alpha)}
+$$ {#eq-lcdm}
+
+The intercept $\lambda_{i,0}$ determines the probability of a correct response for a nonmaster, and the main effect $\lambda_{i,1}$ is the increase in log-odds associated with mastery. Models are estimated with the **measr** package [@measr].
+
+::: {.callout-important}
+## Fungible item parameters
+
+When items measuring a linkage level are fungible, a single intercept and main effect are estimated for all items. The fungible model reduces the number of parameters substantially for linkage levels with small samples.
+:::
+
+## Parameter Estimates {#sec-parameters}
+
+@fig-params shows the distribution of estimated item parameters for nonmasters and masters across all linkage levels. @tbl-params summarizes the estimates by linkage level.
+
+```{r}
+#| label: fig-params
+#| fig-cap: "Estimated probability of a correct response for masters and nonmasters (simulated)"
+#| fig-alt: "Density plot of the probability of a correct response. Nonmasters cluster near 0.3 and masters cluster near 0.85."
+set.seed(3)
+params <- data.frame(
+  group = rep(c("Nonmasters", "Masters"), each = 800),
+  p = c(rbeta(800, 3, 7), rbeta(800, 12, 2.2))
+)
+ggplot(params, aes(x = p, fill = group)) +
+  geom_density(alpha = 0.85, colour = NA) +
+  scale_fill_manual(
+    values = dlm_palette(c("sky", "navy")),
+    breaks = c("Nonmasters", "Masters")
+  ) +
+  scale_x_continuous(limits = c(0, 1), labels = scales::percent) +
+  labs(x = "Probability of a correct response", y = "Density", fill = NULL) +
+  theme_dlm()
+```
+
+```{r}
+#| label: tbl-params
+#| tbl-cap: "Summary of item parameter estimates by linkage level (simulated)"
+levels <- c(
+  "Initial Precursor",
+  "Distal Precursor",
+  "Proximal Precursor",
+  "Target",
+  "Successor"
+)
+tab <- data.frame(
+  `Linkage level` = levels,
+  `Items` = sample(300:900, 5),
+  `Nonmaster mean` = sort(runif(5, .18, .35)),
+  `Nonmaster SD` = runif(5, .08, .14),
+  `Master mean` = sort(runif(5, .78, .9), decreasing = TRUE),
+  `Master SD` = runif(5, .06, .12),
+  check.names = FALSE
+)
+gt(tab) |>
+  fmt_integer(Items) |>
+  fmt_number(-c(`Linkage level`, Items), decimals = 2)
+```
+
+## Model Fit {#sec-model-fit}
+
+Absolute fit is evaluated with posterior predictive model checks [@park2015]. Relative fit compares the fungible and nonfungible models using leave-one-out cross-validation. @tbl-fit lists the fit flags for each Essential Element. The table is long by design so the PDF demonstrates a table breaking across pages with a repeated header.
+
+```{r}
+#| label: tbl-fit
+#| tbl-cap: "Model fit flags by Essential Element and linkage level (simulated)"
+ee <- sprintf(
+  "M.EE.%d.%s.%d",
+  rep(3:8, each = 6),
+  rep(c("NS", "OA", "G", "MD", "SP", "EE"), 6),
+  rep(1:2, 18)
+)
+fit <- data.frame(
+  `Essential Element` = ee,
+  `IP` = sample(c("✓", "✓", "✓", "Flag"), length(ee), TRUE),
+  `DP` = sample(c("✓", "✓", "✓", "Flag"), length(ee), TRUE),
+  `PP` = sample(c("✓", "✓", "✓", "✓", "Flag"), length(ee), TRUE),
+  `T` = sample(c("✓", "✓", "✓", "✓", "Flag"), length(ee), TRUE),
+  `S` = sample(c("✓", "✓", "✓", "Flag"), length(ee), TRUE),
+  `ppp` = runif(length(ee), .05, .95),
+  check.names = FALSE
+)
+gt(fit) |>
+  fmt_number(ppp, decimals = 3) |>
+  cols_align("center", columns = IP:S)
+```

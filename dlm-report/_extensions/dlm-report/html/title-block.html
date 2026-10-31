@@ -1,0 +1,64 @@
+$if(dlm-cover)$
+<header id="title-block-header" class="quarto-title-block dlm-cover">
+  <div class="dlm-cover-ornament dlm-cover-ornament-left" aria-hidden="true"></div>
+  <div class="dlm-cover-ornament dlm-cover-ornament-right" aria-hidden="true"></div>
+  <div class="dlm-cover-inner">
+    $if(dlm.report-type)$<p class="dlm-eyebrow">$dlm.report-type$</p>$endif$
+    <div class="quarto-title">
+      <h1 class="title">$title$</h1>
+      $if(subtitle)$<p class="subtitle lead">$subtitle$</p>$endif$
+    </div>
+    <div class="dlm-cover-meta">
+      $if(by-author)$<span class="dlm-cover-authors">$for(by-author)$$it.name.literal$$sep$, $endfor$</span>$endif$
+      $if(date)$<span class="dlm-cover-date">$date$</span>$endif$
+      $if(dlm.report-number)$<span class="dlm-cover-number">$dlm.report-number$</span>$endif$
+    </div>
+    <div class="dlm-cover-actions">
+      $if(dlm-pdf)$<a class="btn dlm-btn dlm-btn-primary" href="$dlm-pdf$" download><i class="bi bi-file-earmark-arrow-down" aria-hidden="true"></i> Download PDF</a>$endif$
+      <a class="btn dlm-btn dlm-btn-secondary dlm-start-reading" href="#" hidden>Start reading <i class="bi bi-arrow-right" aria-hidden="true"></i></a>
+    </div>
+    $if(dlm.citation)$
+    <details class="dlm-cite">
+      <summary>Suggested citation</summary>
+      <p>$dlm.citation$</p>
+    </details>
+    $endif$
+  </div>
+  <div class="dlm-cover-logo" role="img" aria-label="Dynamic Learning Maps"></div>
+</header>
+$else$
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+$if(title)$
+<h1 class="title">$title$</h1>
+$endif$
+$if(subtitle)$
+<p class="subtitle lead">$subtitle$</p>
+$endif$
+$if(dlm-blurb)$
+<div class="dlm-blurb"><p>$dlm-blurb$</p></div>
+$endif$
+$if(categories)$
+  $if(quarto-template-params.title-block-categories)$
+<div class="quarto-categories">
+  $for(categories)$
+  <div class="quarto-category">$categories$</div>
+  $endfor$
+</div>
+  $endif$
+$endif$
+</div>
+
+$if(hide-description)$
+$elseif(description)$
+<div>
+  <div class="description">
+    $description$
+  </div>
+</div>
+$endif$
+
+$title-metadata.html()$
+
+</header>
+$endif$

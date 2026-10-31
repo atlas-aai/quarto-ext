@@ -1,0 +1,30 @@
+# Welcome {.unnumbered}
+
+```{r}
+#| label: setup-index
+source("_common.R")
+```
+
+This `r if (dlm_is_pdf()) "document is" else "website hosts"` the *2025–2026 Technical Manual* for the Year-End model of the Dynamic Learning Maps® (DLM®) Alternate Assessment System.
+
+::: {.content-visible when-format="html"}
+Read it chapter by chapter in the browser, or download the complete PDF from the button above.
+:::
+
+::: {.content-visible when-format="typst"}
+The manual is also available as a searchable website at <https://dynamiclearningmaps.org>.
+:::
+
+::: {.callout-note}
+## About this template
+
+Every chapter in this project is placeholder content. The text shows the conventions of a DLM technical manual, and all data are simulated so that each table, figure, and cross-reference renders in both formats. Replace these files with the chapters of your report.
+:::
+
+## How to read this manual {.unnumbered}
+
+Chapters follow the structure of the validity argument. @sec-overview describes the purpose of the system and the intended uses of results. @sec-design documents how items and testlets are written and reviewed. @sec-modeling describes the diagnostic classification models used to score the assessment, and @sec-reliability summarizes the reliability evidence. Supplemental tables appear in the appendices.
+
+## Acknowledgments {.unnumbered}
+
+The publication of this technical manual builds upon the work of many people. List the contributing staff, partner states, and advisory committees here.

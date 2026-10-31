@@ -1,0 +1,70 @@
+# Assessment Design and Development {#sec-design}
+
+```{r}
+#| label: setup-design
+source("_common.R")
+```
+
+This chapter describes the design of testlets, the item-writing process, and the external review of items and testlets. Assessment content is organized into testlets, short sets of items that share a common engagement activity.
+
+## Testlet Pool {#sec-testlet-pool}
+
+@tbl-pool summarizes the operational testlet pool by subject and grade band. Counts are simulated for demonstration.
+
+```{r}
+#| label: tbl-pool
+#| tbl-cap: "Operational testlet pool by subject and grade band (simulated)"
+set.seed(2026)
+pool <- expand.grid(
+  `Grade band` = c("3–5", "6–8", "9–12"),
+  Subject = c("English language arts", "Mathematics", "Science"),
+  stringsAsFactors = FALSE
+)
+pool <- pool[, c("Subject", "Grade band")]
+pool$Testlets <- sample(180:420, nrow(pool))
+pool$Items <- pool$Testlets * sample(3:5, nrow(pool), replace = TRUE)
+pool$`Field test (%)` <- runif(nrow(pool), 8, 18)
+gt(pool) |>
+  fmt_integer(c(Testlets, Items)) |>
+  fmt_number(`Field test (%)`, decimals = 1)
+```
+
+## External Review {#sec-external-review}
+
+Panelists review every testlet for accessibility, content, and bias and sensitivity before field testing. @fig-review shows the distribution of review decisions across rounds.
+
+```{r}
+#| label: fig-review
+#| fig-cap: "Distribution of external review decisions by review round (simulated)"
+#| fig-alt: "Stacked bar chart showing that most testlets were accepted in each review round, with a small share revised and very few rejected."
+review <- data.frame(
+  round = rep(paste("Round", 1:4), each = 3),
+  decision = factor(
+    rep(c("Accept", "Revise", "Reject"), 4),
+    levels = c("Reject", "Revise", "Accept")
+  ),
+  n = c(312, 48, 6, 290, 41, 9, 334, 29, 4, 301, 37, 5)
+)
+ggplot(review, aes(x = round, y = n, fill = decision)) +
+  geom_col(width = 0.65) +
+  scale_fill_manual(
+    values = dlm_palette(c("navy", "sky", "blue"))[c(3, 2, 1)],
+    breaks = c("Accept", "Revise", "Reject")
+  ) +
+  labs(x = NULL, y = "Testlets", fill = NULL) +
+  theme_dlm()
+```
+
+Most testlets were accepted without revision. Panelists most often recommended revisions to the engagement activity, which is consistent with prior years [@clark2016].
+
+### Accessibility Review
+
+Accessibility panelists evaluate whether testlets can be administered with the full range of supports available in the system. Supports include alternate forms for students who are blind or have visual impairments, as well as signed and read-aloud presentation.
+
+### Bias and Sensitivity Review
+
+Bias and sensitivity panelists evaluate whether testlets contain content that could disadvantage a subgroup of students. @eq-pvalue gives the standardized difference used to flag items for review.
+
+$$
+\delta_i = \frac{\bar{p}_{i,\text{focal}} - \bar{p}_{i,\text{reference}}}{\sqrt{\bar{p}_i (1 - \bar{p}_i)}}
+$$ {#eq-pvalue}

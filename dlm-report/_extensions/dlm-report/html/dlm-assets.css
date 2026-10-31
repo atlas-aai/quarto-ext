@@ -1,0 +1,36 @@
+/* DLM report: self-hosted fonts and brand imagery.
+   Quarto copies dependency files flat into the dependency folder in site_libs/quarto-contrib. */
+
+@font-face {
+  font-family: "Inter";
+  font-style: normal;
+  font-weight: 100 900;
+  font-display: swap;
+  src: url("inter-latin-wght-normal.woff2") format("woff2-variations"),
+       url("inter-latin-wght-normal.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "Inter";
+  font-style: italic;
+  font-weight: 100 900;
+  font-display: swap;
+  src: url("inter-latin-wght-italic.woff2") format("woff2-variations"),
+       url("inter-latin-wght-italic.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "JetBrains Mono";
+  font-style: normal;
+  font-weight: 100 800;
+  font-display: swap;
+  src: url("jetbrains-mono-latin-wght-normal.woff2") format("woff2-variations"),
+       url("jetbrains-mono-latin-wght-normal.woff2") format("woff2");
+}
+
+/* Brand imagery lives here (not in the theme) so the URLs resolve relative
+   to this stylesheet. */
+#title-block-header.dlm-cover .dlm-cover-ornament-left { background-image: url("hero-left.svg"); }
+#title-block-header.dlm-cover .dlm-cover-ornament-right { background-image: url("hero-right.svg"); }
+#title-block-header.dlm-cover .dlm-cover-logo { background-image: url("dlm-logo.png"); }
+body.quarto-dark #title-block-header.dlm-cover .dlm-cover-logo { background-image: url("dlm-logo-white.png"); }

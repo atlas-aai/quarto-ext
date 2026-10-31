@@ -1,0 +1,62 @@
+project:
+  type: book
+  output-dir: _book
+  execute-dir: project
+
+book:
+  title: "2025–2026 Technical Manual"
+  subtitle: "Year-End Model"
+  date: "2026-12-01"
+  date-format: "MMMM YYYY"
+  output-file: "dlm-ye-techmanual-2025-2026"
+  downloads: [pdf]
+  search: true
+  site-url: https://dynamiclearningmaps.org
+  favicon: _extensions/dlm-report/assets/favicon.png
+  navbar:
+    logo: _extensions/dlm-report/assets/dlm-logo-white.png
+    logo-alt: "Dynamic Learning Maps"
+    title: false
+  sidebar:
+    style: docked
+    collapse-level: 2
+  page-navigation: true
+  page-footer:
+    left: "Copyright &copy; 2026 ATLAS, University of Kansas"
+    right:
+      - text: "dynamiclearningmaps.org"
+        href: https://dynamiclearningmaps.org
+  chapters:
+    - index.qmd
+    - chapters/01-overview.qmd
+    - chapters/02-design.qmd
+    - chapters/03-modeling.qmd
+    - chapters/04-reliability.qmd
+    - references.qmd
+  appendices:
+    - appendices/a-supplemental-tables.qmd
+
+bibliography: bib/references.bib
+
+# DLM report metadata (used by both the website and the PDF)
+dlm:
+  report-type: "Technical Manual"
+  divider: true          # PDF divider pages: true, false, or after-first
+  running-title: "2025–2026 Technical Manual · Year-End Model"
+  citation: >-
+    Dynamic Learning Maps Consortium. (2026). *2025–2026 Technical
+    Manual—Year-End Model*. University of Kansas, Accessible Teaching,
+    Learning, and Assessment Systems.
+  funding: >-
+    This template ships with placeholder content and simulated data. Replace
+    this paragraph with the funding statement and disclaimers that apply to
+    the report.
+
+execute:
+  echo: false
+  warning: false
+  message: false
+
+format:
+  dlm-report-html: default
+  dlm-report-typst: default
