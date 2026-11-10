@@ -227,7 +227,9 @@
   keywords: (),
   lang: "en",
   region: "US",
-  font: ("Inter",),
+  font: ("Atkinson Hyperlegible Next",),
+  // Equations need an OpenType math font; Fira Math suits the sans-serif text
+  mathfont: ("Fira Math",),
   codefont: ("JetBrains Mono",),
   fontsize: 10.5pt,
   linestretch: 1,
@@ -243,6 +245,7 @@
   doc,
 ) = {
   dlm-assets-state.update(assets)
+  dlm-text-font.update(font)
   // divider: true (every numbered chapter), false (none), or "after-first"
   // (every numbered chapter except chapter 1). {.divider} / {.no-divider}
   // on a heading overrides this.
@@ -253,6 +256,7 @@
   set text(lang: lang, region: region, size: fontsize, font: font, fill: dlm-ink, number-type: "lining")
   set par(justify: false, leading: 0.72em * linestretch, spacing: 1.15em)
   show raw: set text(font: codefont, size: 0.88em)
+  show math.equation: set text(font: mathfont)
   show link: set text(fill: dlm-blue)
   show ref: set text(fill: dlm-blue)
   set strong(delta: 250)
@@ -416,8 +420,8 @@
   show figure: set align(left)
   show figure.where(kind: "quarto-float-tbl"): set block(breakable: true)
   show figure.where(kind: "quarto-float-tbl"): set figure.caption(position: top)
+  // Captions, tables, and the reference list use the body text size
   show figure.caption: it => {
-    set text(size: 9.5pt)
     set par(justify: false, leading: 0.6em)
     block(width: 100%)[
       #text(weight: 700, fill: dlm-navy)[#it.supplement #context it.counter.display(it.numbering)]#h(8pt)#it.body
@@ -431,7 +435,7 @@
   )
   set table.hline(stroke: 0.8pt + dlm-navy)
   show table.cell.where(y: 0): set text(weight: 650, fill: dlm-navy)
-  show table: set text(size: 9pt, number-type: "lining", number-width: "tabular")
+  show table: set text(number-type: "lining", number-width: "tabular")
   show table: set par(justify: false, leading: 0.55em)
   show table: it => block(stroke: (bottom: 0.8pt + dlm-navy), it)
 

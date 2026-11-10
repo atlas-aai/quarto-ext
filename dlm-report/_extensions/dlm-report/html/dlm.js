@@ -1,4 +1,14 @@
 // DLM report: small progressive enhancements for the website format.
+
+// Equations use MathJax's Fira font, matching Fira Math in the PDF. Text in
+// equations, including equation numbers (\tag), uses the page font. MathJax
+// loads with `defer`, so this runs first; a document's own MathJax config wins.
+window.MathJax = window.MathJax || {};
+window.MathJax.output = Object.assign(
+  { font: "mathjax-fira", mtextInheritFont: true },
+  window.MathJax.output
+);
+
 document.addEventListener("DOMContentLoaded", () => {
   // Label chapter titles "Chapter 3" or "Appendix B"
   document.querySelectorAll("#title-block-header h1.title .chapter-number").forEach((el) => {

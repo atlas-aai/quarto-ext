@@ -119,12 +119,12 @@ function Header(el)
 end
 
 -- Typst: citeproc fills the `::: {#refs}` div with the reference list (from
--- the document's `csl`, e.g. APA). Style it as a reference list: smaller type
--- and the 0.5in hanging indent APA requires.
+-- the document's `csl`, e.g. APA). Style it as a reference list with the
+-- 0.5in hanging indent APA requires.
 function Div(el)
   if quarto.doc.is_format("typst") and el.identifier == "refs" then
     return {
-      pandoc.RawBlock("typst", "#[#set text(size: 9.5pt)\n#set par(hanging-indent: 0.5in, spacing: 0.9em, leading: 0.6em)"),
+      pandoc.RawBlock("typst", "#[#set par(hanging-indent: 0.5in, spacing: 0.9em, leading: 0.6em)"),
       el,
       pandoc.RawBlock("typst", "]"),
     }
@@ -174,8 +174,8 @@ function Meta(meta)
       stylesheets = { "html/dlm-assets.css" },
       scripts = { { path = "html/dlm.js", afterBody = true } },
       resources = {
-        "fonts/woff2/inter-latin-wght-normal.woff2",
-        "fonts/woff2/inter-latin-wght-italic.woff2",
+        "fonts/woff2/atkinson-hyperlegible-next-wght-normal.woff2",
+        "fonts/woff2/atkinson-hyperlegible-next-wght-italic.woff2",
         "fonts/woff2/jetbrains-mono-latin-wght-normal.woff2",
         "assets/dlm-logo.png",
         "assets/dlm-logo-white.png",

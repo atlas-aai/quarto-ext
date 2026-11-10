@@ -17,7 +17,14 @@
   if c == 0 { str(k) } else { dlm-chapter-prefix(c) + "." + str(k) }
 }
 
-#let equation-numbering = n => "(" + dlm-float-number(n) + ")"
+// Equation numbers use the text font, not the math font. Quarto passes this
+// function to each numbered equation directly, so it sets the font itself.
+#let dlm-text-font = state("dlm-text-font", none)
+#let equation-numbering = n => context {
+  let label = "(" + dlm-float-number(n) + ")"
+  let font = dlm-text-font.get()
+  if font == none { label } else { text(font: font, label) }
+}
 #let callout-numbering = n => dlm-float-number(n)
 #let subfloat-numbering(n-super, subfloat-idx) = {
   dlm-float-number(n-super) + numbering("a", subfloat-idx)

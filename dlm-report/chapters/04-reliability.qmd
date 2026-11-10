@@ -29,8 +29,7 @@ ggplot(rel, aes(x = subject, y = acc)) +
   geom_boxplot(fill = dlm_colors[["mist"]], colour = dlm_colors[["navy"]], width = 0.5,
                outlier.colour = dlm_colors[["blue"]], outlier.size = 1) +
   scale_y_continuous(limits = c(0.7, 1)) +
-  labs(x = NULL, y = "Classification accuracy") +
-  theme_dlm()
+  labs(x = NULL, y = "Classification accuracy")
 ```
 
 ```{r}

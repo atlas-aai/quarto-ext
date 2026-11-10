@@ -54,7 +54,10 @@ $if(region)$
   region: "$region$",
 $endif$
 $if(mainfont)$
-  font: ("$mainfont$", "Inter"),
+  font: ("$mainfont$", "Atkinson Hyperlegible Next"),
+$endif$
+$if(mathfont)$
+  mathfont: ($for(mathfont)$"$mathfont$",$endfor$ "Fira Math"),
 $endif$
 $if(codefont)$
   codefont: ($for(codefont)$"$codefont$",$endfor$ "JetBrains Mono"),

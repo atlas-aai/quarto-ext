@@ -47,12 +47,8 @@ review <- data.frame(
 )
 ggplot(review, aes(x = round, y = n, fill = decision)) +
   geom_col(width = 0.65) +
-  scale_fill_manual(
-    values = dlm_palette(c("navy", "sky", "blue"))[c(3, 2, 1)],
-    breaks = c("Accept", "Revise", "Reject")
-  ) +
-  labs(x = NULL, y = "Testlets", fill = NULL) +
-  theme_dlm()
+  scale_fill_discrete(breaks = c("Accept", "Revise", "Reject")) +
+  labs(x = NULL, y = "Testlets", fill = NULL)
 ```
 
 Most testlets were accepted without revision. Panelists most often recommended revisions to the engagement activity, which is consistent with prior years [@clark2016].

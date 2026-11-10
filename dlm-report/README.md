@@ -75,7 +75,7 @@ Standard Quarto options still work: `toc`, `toc-depth`, `lof`, `lot`, `number-de
 - Put `::: {#refs}` where the reference list belongs. Citations and references are formatted by Pandoc's citeproc with the extension's `apa.csl` (APA 7th edition, from the Zotero Style Repository) in both formats, so the website and the PDF match. Add sources to `bib/references.bib`, which `_quarto.yml` sets as the `bibliography`. To use a different style, set `csl` in `_quarto.yml`; it overrides the extension's default.
 - To put text and a citation in the same parentheses, escape the semicolon: `[DCMs\; @rupp2010]` gives "(DCMs; Rupp et al., 2010)". An unescaped `;` ends the citation group.
 - Start every chapter with a setup chunk that runs `source("_common.R")`. Quarto renders each chapter in a fresh R session, so packages, helpers, and data a chapter needs must be loaded there. Put anything shared across chapters in `_common.R`.
-- `R/dlm-theme.R` (sourced by `_common.R`) provides `theme_dlm()`, `scale_fill_dlm()`, and `dlm_palette()` so figures match the report.
+- Figures use `ratlas::theme_atlas()`, set as the default ggplot2 theme in `_common.R` with the DLM ink, accent, and a mist-to-navy continuous ramp. Discrete scales use its colorblind-safe Okabe-Ito palette, so plots need no theme or scale calls. Install ratlas with `pak::pak("atlas-aai/ratlas")`. `R/dlm-theme.R` provides `dlm_colors` for single-color marks and annotations.
 
 ## Heading attributes
 
@@ -124,10 +124,10 @@ _extensions/dlm-report/
 ├── html/                 SCSS themes (light, dark, shared rules), cover partial, fonts CSS, small JS
 ├── typst/                Typst template partials (template, show, page, numbering, bibliography)
 ├── assets/               DLM logo (color and white), favicon, ornament SVGs
-└── fonts/                Inter and JetBrains Mono (SIL Open Font License), TTF for Typst and WOFF2 for the web
+└── fonts/                Atkinson Hyperlegible Next, Fira Math, and JetBrains Mono (SIL Open Font License): TTF/OTF for Typst and figures, WOFF2 for the web
 ```
 
-Fonts are bundled so the PDF looks identical on every machine and the website does not depend on Google Fonts. The slide template uses Aptos. Inter is the open-licensed match. Set `mainfont: Aptos` to use Aptos in the PDF on machines where it is installed.
+Fonts are bundled so the PDF looks identical on every machine and the website does not depend on Google Fonts. The report font is Atkinson Hyperlegible Next, designed by the Braille Institute for legibility, and it is used on the website, in the PDF, and in figures. `_common.R` registers the bundled copy for figures when the font is not installed. Set `mainfont` to use a different font in the PDF. Equations use Fira Math (an OpenType math font, bundled) in the PDF and MathJax's Fira font on the website, so math matches the sans-serif text in both formats. Set `mathfont` to use a different math font in the PDF; it must be an OpenType math font such as STIX Two Math or New Computer Modern Math.
 
 ## Notes
 

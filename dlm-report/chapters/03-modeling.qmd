@@ -38,13 +38,9 @@ params <- data.frame(
 )
 ggplot(params, aes(x = p, fill = group)) +
   geom_density(alpha = 0.85, colour = NA) +
-  scale_fill_manual(
-    values = dlm_palette(c("sky", "navy")),
-    breaks = c("Nonmasters", "Masters")
-  ) +
+  scale_fill_discrete(breaks = c("Nonmasters", "Masters")) +
   scale_x_continuous(limits = c(0, 1), labels = scales::percent) +
-  labs(x = "Probability of a correct response", y = "Density", fill = NULL) +
-  theme_dlm()
+  labs(x = "Probability of a correct response", y = "Density", fill = NULL)
 ```
 
 ```{r}

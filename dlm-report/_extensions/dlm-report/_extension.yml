@@ -51,6 +51,7 @@ contributes:
         - typst/biblio.typ
       font-paths:
         - fonts/ttf
+        - fonts/otf
       papersize: us-letter
       pdf-standard: ua-1
       # Format citations with Pandoc and the CSL style, as on the website
