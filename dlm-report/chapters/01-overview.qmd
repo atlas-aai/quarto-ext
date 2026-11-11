@@ -5,7 +5,7 @@
 source("_common.R")
 ```
 
-The Dynamic Learning Maps® (DLM®) Alternate Assessment System assesses student achievement in English language arts, mathematics, and science for students with the most significant cognitive disabilities in grades 3–8 and high school. The purpose of the system is to improve academic experiences and outcomes for these students by setting high, actionable academic expectations and by providing appropriate and effective supports to educators.
+The Dynamic Learning Maps^&reg;^ (DLM^&reg;^) Alternate Assessment System assesses student achievement in English language arts, mathematics, and science for students with the most significant cognitive disabilities in grades 3–8 and high school. The purpose of the system is to improve academic experiences and outcomes for these students by setting high, actionable academic expectations and by providing appropriate and effective supports to educators.
 
 This chapter summarizes the theory of action, the intended uses of results, and the organization of the remaining chapters.
 
