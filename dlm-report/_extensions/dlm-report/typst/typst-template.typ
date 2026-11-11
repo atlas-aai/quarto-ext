@@ -231,7 +231,7 @@
   // Equations need an OpenType math font; Fira Math suits the sans-serif text
   mathfont: ("Fira Math",),
   codefont: ("JetBrains Mono",),
-  fontsize: 10.5pt,
+  fontsize: 12pt,
   linestretch: 1,
   toc: true,
   toc-title: none,
@@ -318,6 +318,11 @@
   // Headings ------------------------------------------------------------------
   set heading(numbering: dlm-heading-numbering)
 
+  // Heading sizes and spacing scale with `fontsize`. Each number is the value
+  // in points the design uses with 10.5pt body text, so the proportions hold
+  // at any size. Page layout (in inches) stays fixed.
+  let hsize(pt) = pt / 10.5 * fontsize
+
   show heading: set text(fill: dlm-navy, weight: 700)
   show heading: set par(justify: false, leading: 0.5em)
   show heading: set block(sticky: true)
@@ -359,14 +364,14 @@
         set par(spacing: 0pt, leading: 0.42em, justify: false)
         if numbered {
           let label = if in-appendix { "Appendix" } else if book { "Chapter" } else { "Section" }
-          block(below: 6pt, text(size: 10.5pt, weight: 700, fill: dlm-blue, tracking: 0.16em)[#upper(label)])
-          block(below: 14pt, text(size: 64pt, weight: 800, fill: dlm-sky, tracking: -0.02em, top-edge: "cap-height", bottom-edge: "baseline")[#numbering(it.numbering, ..counter(heading).at(loc))])
+          block(below: hsize(6), text(size: hsize(10.5), weight: 700, fill: dlm-blue, tracking: 0.16em)[#upper(label)])
+          block(below: hsize(14), text(size: hsize(64), weight: 800, fill: dlm-sky, tracking: -0.02em, top-edge: "cap-height", bottom-edge: "baseline")[#numbering(it.numbering, ..counter(heading).at(loc))])
         }
-        block(below: 18pt, text(size: 30pt, weight: 700, fill: dlm-navy, tracking: -0.015em, it.body))
+        block(below: hsize(18), text(size: hsize(30), weight: 700, fill: dlm-navy, tracking: -0.015em, it.body))
         if blurb != none {
-          block(below: 18pt, width: 4.2in, {
+          block(below: hsize(18), width: 4.2in, {
             set par(leading: 0.6em)
-            text(size: 13pt, style: "italic", fill: dlm-muted, blurb)
+            text(size: hsize(13), style: "italic", fill: dlm-muted, blurb)
           })
         }
         dlm-rule()
@@ -379,19 +384,19 @@
       if it.numbering != none {
         context {
           let label = if dlm-appendix-state.get() != none { "Appendix" } else { "Chapter" }
-          text(size: 10pt, weight: 700, fill: dlm-blue, tracking: 0.14em)[#upper(label) #counter(heading).display(it.numbering)]
+          text(size: hsize(10), weight: 700, fill: dlm-blue, tracking: 0.14em)[#upper(label) #counter(heading).display(it.numbering)]
         }
-        v(8pt)
+        v(hsize(8))
       }
-      block(text(size: 26pt, tracking: -0.01em, it.body))
-      v(4pt)
+      block(text(size: hsize(26), tracking: -0.01em, it.body))
+      v(hsize(4))
       dlm-rule()
-      v(22pt)
+      v(hsize(22))
     } else {
-      block(above: 30pt, below: 12pt)[
-        #set text(size: 19pt, tracking: -0.01em)
-        #if it.numbering != none [#counter(heading).display(it.numbering)#h(12pt)]#it.body
-        #v(-2pt)
+      block(above: hsize(30), below: hsize(12))[
+        #set text(size: hsize(19), tracking: -0.01em)
+        #if it.numbering != none [#counter(heading).display(it.numbering)#h(hsize(12))]#it.body
+        #v(hsize(-2))
         #dlm-rule(width: 40pt)
       ]
     }
@@ -399,19 +404,19 @@
   }
 
   show heading.where(level: 2): it => {
-    block(above: 24pt, below: 10pt)[
-      #set text(size: if book { 15pt } else { 14pt })
-      #if it.numbering != none [#counter(heading).display(it.numbering)#h(10pt)]#it.body
+    block(above: hsize(24), below: hsize(10))[
+      #set text(size: if book { hsize(15) } else { hsize(14) })
+      #if it.numbering != none [#counter(heading).display(it.numbering)#h(hsize(10))]#it.body
     ]
   }
   show heading.where(level: 3): it => {
-    block(above: 18pt, below: 8pt)[
-      #set text(size: 12pt, weight: 650)
-      #if it.numbering != none [#counter(heading).display(it.numbering)#h(8pt)]#it.body
+    block(above: hsize(18), below: hsize(8))[
+      #set text(size: hsize(12), weight: 650)
+      #if it.numbering != none [#counter(heading).display(it.numbering)#h(hsize(8))]#it.body
     ]
   }
-  show heading.where(level: 4): it => block(above: 12pt, below: 6pt, text(size: 10.5pt, weight: 650, fill: dlm-blue, it.body))
-  show heading.where(level: 5): it => block(above: 10pt, below: 6pt, text(size: 10.5pt, weight: 600, style: "italic", it.body))
+  show heading.where(level: 4): it => block(above: hsize(12), below: hsize(6), text(size: hsize(10.5), weight: 650, fill: dlm-blue, it.body))
+  show heading.where(level: 5): it => block(above: hsize(10), below: hsize(6), text(size: hsize(10.5), weight: 600, style: "italic", it.body))
 
   // Figures and tables ----------------------------------------------------------
   set figure(numbering: dlm-float-number, gap: 10pt)
