@@ -121,10 +121,22 @@ end
 -- Typst: citeproc fills the `::: {#refs}` div with the reference list (from
 -- the document's `csl`, e.g. APA). Style it as a reference list with the
 -- 0.5in hanging indent APA requires.
+--
+-- Typst: tables stay on one page with their caption. A table chunk with
+-- `#| classes: breakable` (or a `::: {.breakable}` div) may split across pages
+-- instead, repeating its header row, like kableExtra's `longtable`.
 function Div(el)
-  if quarto.doc.is_format("typst") and el.identifier == "refs" then
+  if not quarto.doc.is_format("typst") then return nil end
+  if el.identifier == "refs" then
     return {
       pandoc.RawBlock("typst", "#[#set par(hanging-indent: 0.5in, spacing: 0.9em, leading: 0.6em)"),
+      el,
+      pandoc.RawBlock("typst", "]"),
+    }
+  end
+  if el.classes:includes("breakable") then
+    return {
+      pandoc.RawBlock("typst", "#[#show figure: set block(breakable: true)"),
       el,
       pandoc.RawBlock("typst", "]"),
     }

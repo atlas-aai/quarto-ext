@@ -73,6 +73,7 @@ Absolute fit is evaluated with posterior predictive model checks [@park2015]. Re
 
 ```{r}
 #| label: tbl-fit
+#| classes: breakable
 #| tbl-cap: "Model fit flags by Essential Element and linkage level (simulated)"
 ee <- sprintf(
   "M.EE.%d.%s.%d",
