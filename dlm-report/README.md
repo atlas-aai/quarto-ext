@@ -71,7 +71,7 @@ Standard Quarto options still work: `toc`, `toc-depth`, `lof`, `lot`, `number-de
 - Label every chapter and section (`{#sec-modeling}`) and refer to it with `@sec-modeling`.
 - Label tables `tbl-*` and figures `fig-*` in code chunks. Numbers include the chapter ("Table 3.2") and are correct everywhere: captions, cross-references, and the lists of tables and figures.
 - Table captions sit above tables and figure captions below figures in both formats.
-- Long tables break across PDF pages and repeat the header row.
+- In the PDF, each table stays on one page with its caption. For a table too long for one page, add `#| classes: breakable` to its chunk (or wrap it in `::: {.breakable}`); it then splits across pages and repeats its header row, like kableExtra's `longtable`.
 - Put `::: {#refs}` where the reference list belongs. Citations and references are formatted by Pandoc's citeproc with the extension's `apa.csl` (APA 7th edition, from the Zotero Style Repository) in both formats, so the website and the PDF match. Add sources to `bib/references.bib`, which `_quarto.yml` sets as the `bibliography`. To use a different style, set `csl` in `_quarto.yml`; it overrides the extension's default.
 - To put text and a citation in the same parentheses, escape the semicolon: `[DCMs\; @rupp2010]` gives "(DCMs; Rupp et al., 2010)". An unescaped `;` ends the citation group.
 - Start every chapter with a setup chunk that runs `source("_common.R")`. Quarto renders each chapter in a fresh R session, so packages, helpers, and data a chapter needs must be loaded there. Put anything shared across chapters in `_common.R`.

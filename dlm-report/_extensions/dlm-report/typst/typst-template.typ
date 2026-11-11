@@ -148,7 +148,7 @@
 }
 
 // Cover ------------------------------------------------------------------------
-#let dlm-cover(title: none, subtitle: none, report-type: none, authors: (), date: none, report-number: none, assets: none) = {
+#let dlm-cover(title: none, subtitle: none, report-type: none, authors: (), date: none, report-number: none, assets: none, fontsize: 12pt) = {
   page(
     margin: 0pt,
     header: none,
@@ -157,21 +157,30 @@
     background: if assets != none { image(assets + "/cover.svg", width: 100%, height: 100%) },
   )[
     #place(left + top, dx: 0.95in, dy: 3.05in, block(width: 5.2in)[
+      // No paragraph spacing and lines cut to the letter heights, so each v()
+      // below is the visible gap
+      #set par(spacing: 0pt, justify: false)
+      #set text(top-edge: "cap-height", bottom-edge: "baseline")
       #if report-type != none [
         #text(size: 10.5pt, weight: 700, fill: dlm-blue, tracking: 0.14em)[#upper(report-type)]
-        #v(10pt)
-      ]
-      #set par(leading: 0.42em, justify: false)
-      #text(size: 34pt, weight: 700, fill: dlm-navy, tracking: -0.015em)[#title]
-      #if subtitle != none [
         #v(12pt)
-        #set par(leading: 0.55em)
-        #text(size: 16pt, weight: 500, fill: dlm-blue)[#subtitle]
       ]
-      #v(22pt)
+      #block[
+        #set par(leading: 0.3em)
+        #text(size: 34pt, weight: 700, fill: dlm-navy, tracking: -0.015em)[#title]
+      ]
+      #if subtitle != none [
+        #v(36pt)
+        #block[
+          #set par(leading: 0.45em)
+          #text(size: 16pt, weight: 500, fill: dlm-blue)[#subtitle]
+        ]
+      ]
+      #v(18pt)
       #dlm-rule()
       #v(14pt)
-      #set text(size: 10.5pt, fill: dlm-muted)
+      #set text(size: fontsize, fill: dlm-muted, top-edge: "cap-height", bottom-edge: "descender")
+      #set par(leading: 0.5em)
       #if authors.len() > 0 [
         #text(fill: dlm-ink, weight: 500)[#if authors.len() == 2 { authors.map(a => a.name).join(" and ") } else { authors.map(a => a.name).join(", ", last: ", and ") }]
         #linebreak()
@@ -186,16 +195,16 @@
 }
 
 // Colophon (inside cover) ---------------------------------------------------------
-#let dlm-colophon(citation: none, copyright: none, publisher: none, funding: none, extra: none) = {
+#let dlm-colophon(citation: none, copyright: none, publisher: none, funding: none, extra: none, fontsize: 12pt) = {
   page(header: none, footer: none, background: none, foreground: none)[
-    #set text(size: 9pt, fill: dlm-ink)
+    #set text(size: fontsize, fill: dlm-ink)
     #set par(justify: false, leading: 0.6em, spacing: 0.9em)
     #align(bottom)[
       #if extra != none [#extra #v(12pt)]
       #if citation != none [
-        #text(weight: 700, fill: dlm-navy, size: 9.5pt)[Suggested citation]
+        #text(weight: 700, fill: dlm-navy)[Suggested citation]
         #v(4pt)
-        #block(inset: (left: 1.5em))[#par(hanging-indent: 1.5em)[#citation]]
+        #par(hanging-indent: 1.5em)[#citation]
         #v(10pt)
       ]
       #if funding != none [
@@ -267,6 +276,9 @@
   let margin-x = 1in
   let margin-top = 1.05in
   let margin-bottom = 1in
+  // Running header and page number: slightly smaller than body text (10.5pt
+  // with 12pt body text)
+  let furniture-size = 0.875 * fontsize
 
   set page(
     paper: "us-letter",
@@ -281,7 +293,7 @@
       }
       let before = query(heading.where(level: 1).before(here()))
       let section = if before.len() > 0 { before.last() } else { none }
-      set text(size: 8.5pt, fill: dlm-muted)
+      set text(size: furniture-size, fill: dlm-muted)
       grid(
         columns: (1fr, auto),
         align: (left, right),
@@ -308,7 +320,7 @@
         rotate(45deg, origin: center + horizon,
           rect(width: 70pt, height: 70pt, radius: 10pt, fill: dlm-navy)))
       place(left + bottom, dx: 0pt, dy: -12pt,
-        box(width: 46pt, align(center, text(size: 8.5pt, weight: 700, fill: white, label))))
+        box(width: 46pt, align(center, text(size: furniture-size, weight: 700, fill: white, label))))
       if assets != none {
         place(right + bottom, dx: -0.6in, dy: -0.38in, image(assets + "/dlm-logo.png", width: 0.95in, alt: "Dynamic Learning Maps"))
       }
@@ -391,7 +403,7 @@
       block(text(size: hsize(26), tracking: -0.01em, it.body))
       v(hsize(4))
       dlm-rule()
-      v(hsize(22))
+      v(hsize(5))
     } else {
       block(above: hsize(30), below: hsize(12))[
         #set text(size: hsize(19), tracking: -0.01em)
@@ -423,7 +435,6 @@
   set math.equation(numbering: equation-numbering)
   show figure: set block(above: 18pt, below: 18pt)
   show figure: set align(left)
-  show figure.where(kind: "quarto-float-tbl"): set block(breakable: true)
   show figure.where(kind: "quarto-float-tbl"): set figure.caption(position: top)
   // Captions, tables, and the reference list use the body text size
   show figure.caption: it => {
@@ -456,27 +467,32 @@
 
   // Outline styling -------------------------------------------------------------------
   set outline.entry(fill: box(width: 1fr, repeat(text(fill: dlm-mist.darken(25%))[.], gap: 0.25em)))
-  show outline.entry: set text(size: 10pt)
+  // Entries use the body text size (fontsize)
   show outline.entry.where(level: 1): it => {
-    v(9pt, weak: true)
-    set text(weight: 650, fill: dlm-navy)
-    it
+    v(hsize(9), weak: true)
+    if it.element.func() == figure {
+      // Lists of tables and figures: bold number, regular title
+      link(it.element.location(), it.indented(text(weight: 650, fill: dlm-navy, it.prefix()), text(fill: dlm-ink, it.inner())))
+    } else {
+      set text(weight: 650, fill: dlm-navy)
+      it
+    }
   }
 
   // Front matter -------------------------------------------------------------------------
   if cover and title != none {
-    dlm-cover(title: title, subtitle: subtitle, report-type: report-type, authors: authors, date: date, report-number: report-number, assets: assets)
-    dlm-colophon(citation: citation, copyright: copyright, publisher: publisher, funding: funding, extra: colophon-extra)
+    dlm-cover(title: title, subtitle: subtitle, report-type: report-type, authors: authors, date: date, report-number: report-number, assets: assets, fontsize: fontsize)
+    dlm-colophon(citation: citation, copyright: copyright, publisher: publisher, funding: funding, extra: colophon-extra, fontsize: fontsize)
   }
 
   let front-heading(t) = {
     pagebreak(weak: true)
     opener-ornament()
     v(0.65in)
-    block(text(size: 26pt, weight: 700, fill: dlm-navy, tracking: -0.01em, t))
-    v(4pt)
+    block(text(size: hsize(26), weight: 700, fill: dlm-navy, tracking: -0.01em, t))
+    v(hsize(4))
     dlm-rule()
-    v(22pt)
+    v(hsize(22))
   }
 
   let has-front = toc or lot or lof
