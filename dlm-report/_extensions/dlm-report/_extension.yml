@@ -59,7 +59,7 @@ contributes:
         - fonts/ttf
         - fonts/otf
       papersize: us-letter
-      pdf-standard: ua-1
+      pdf-standard: [a-2a, ua-1]
       citeproc: true
       link-citations: true
       toc-title: Contents

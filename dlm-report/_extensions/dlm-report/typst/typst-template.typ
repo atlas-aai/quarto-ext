@@ -83,21 +83,41 @@
 // Callouts (keeps Quarto's block structure so cross-referenced callouts work) -
 // Important callouts get a stop-sign icon (the website swaps it in dlm.scss).
 // Quarto gives important callouts this icon color and no other type uses it.
-#let dlm-important-color = rgb("#CC1914")
 #let dlm-stop-icon(color) = box(baseline: 12%, width: 0.95em, height: 0.95em, {
   place(center + horizon, rotate(22.5deg, polygon.regular(vertices: 8, size: 0.95em, fill: color)))
   place(center + horizon, text(fill: white, weight: 900, size: 0.68em, top-edge: "cap-height", bottom-edge: "baseline")[!])
 })
 
-// Caution callouts get the website's flat traffic cone (Bootstrap Icons
-// "cone-striped") instead of Font Awesome's fire. Quarto gives caution
-// callouts this icon color and no other type uses it.
+// Callout icons are drawn as inline SVG paths rather than Font Awesome glyphs:
+// the glyphs are Unicode private-use code points, which PDF/A-2a forbids even
+// inside artifacts. Quarto gives each callout type its own icon color, so the
+// color picks the icon. Paths are Font Awesome 6 Free (solid), except caution,
+// which uses the website's flat traffic cone (Bootstrap Icons "cone-striped")
+// instead of Font Awesome's fire.
+#let dlm-important-color = rgb("#CC1914")
 #let dlm-caution-color = rgb("#FC5300")
-#let dlm-cone-icon(color) = box(baseline: 12%, pdf.artifact(image(
-  bytes("<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'><path fill='" + color.to-hex() + "' d='M9.97 4.88l.953 3.811C10.158 8.878 9.14 9 8 9c-1.14 0-2.159-.122-2.923-.309L6.03 4.88C6.635 4.957 7.3 5 8 5s1.365-.043 1.97-.12zm-.245-.978L8.97.88C8.718-.13 7.282-.13 7.03.88L6.274 3.9C6.8 3.965 7.382 4 8 4c.618 0 1.2-.036 1.725-.098zm4.396 8.613a.5.5 0 0 1 .037.96l-6 2a.5.5 0 0 1-.316 0l-6-2a.5.5 0 0 1 .037-.96l2.391-.598.565-2.257c.862.212 1.964.339 3.165.339s2.303-.127 3.165-.339l.565 2.257 2.391.598z'/></svg>"),
+#let dlm-svg-icon(viewbox, path, color) = box(baseline: 12%, pdf.artifact(image(
+  bytes("<svg xmlns='http://www.w3.org/2000/svg' viewBox='" + viewbox + "'><path fill='" + color.to-hex() + "' d='" + path + "'/></svg>"),
   format: "svg",
   height: 0.95em,
 )))
+#let dlm-callout-icons = (
+  // note: Font Awesome "info"
+  (rgb("#0758E5"), "0 0 192 512", "M48 80a48 48 0 1 1 96 0A48 48 0 1 1 48 80zM0 224c0-17.7 14.3-32 32-32H96c17.7 0 32 14.3 32 32V448h32c17.7 0 32 14.3 32 32s-14.3 32-32 32H32c-17.7 0-32-14.3-32-32s14.3-32 32-32H64V256H32c-17.7 0-32-14.3-32-32z"),
+  // tip: Font Awesome "lightbulb"
+  (rgb("#00A047"), "0 0 384 512", "M297.2 248.9C311.6 228.3 320 203.2 320 176c0-70.7-57.3-128-128-128S64 105.3 64 176c0 27.2 8.4 52.3 22.8 72.9c3.7 5.3 8.1 11.3 12.8 17.7l0 0c12.9 17.7 28.3 38.9 39.8 59.8c10.4 19 15.7 38.8 18.3 57.5H109c-2.2-12-5.9-23.7-11.8-34.5c-9.9-18-22.2-34.9-34.5-51.8l0 0 0 0c-5.2-7.1-10.4-14.2-15.4-21.4C27.6 247.9 16 213.3 16 176C16 78.8 94.8 0 192 0s176 78.8 176 176c0 37.3-11.6 71.9-31.4 100.3c-5 7.2-10.2 14.3-15.4 21.4l0 0 0 0c-12.3 16.8-24.6 33.7-34.5 51.8c-5.9 10.8-9.6 22.5-11.8 34.5H226.4c2.6-18.7 7.9-38.6 18.3-57.5c11.5-20.9 26.9-42.1 39.8-59.8l0 0 0 0 0 0c4.7-6.4 9-12.4 12.7-17.7zM192 128c-26.5 0-48 21.5-48 48c0 8.8-7.2 16-16 16s-16-7.200-16-16c0-44.2 35.8-80 80-80c8.8 0 16 7.2 16 16s-7.2 16-16 16zm0 384c-44.2 0-80-35.8-80-80V416H272v16c0 44.2-35.8 80-80 80z"),
+  // warning: Font Awesome "triangle-exclamation"
+  (rgb("#EB9113"), "0 0 512 512", "M256 32c14.2 0 27.3 7.5 34.5 19.8l216 368c7.3 12.4 7.3 27.7 .2 40.1S486.3 480 472 480H40c-14.3 0-27.6-7.7-34.7-20.1s-7-27.8 .2-40.1l216-368C228.7 39.5 241.8 32 256 32zm0 128c-13.3 0-24 10.7-24 24V296c0 13.3 10.7 24 24 24s24-10.7 24-24V184c0-13.3-10.7-24-24-24zm32 224a32 32 0 1 0 -64 0 32 32 0 1 0 64 0z"),
+  // caution: Bootstrap Icons "cone-striped"
+  (dlm-caution-color, "0 0 16 16", "M9.97 4.88l.953 3.811C10.158 8.878 9.14 9 8 9c-1.14 0-2.159-.122-2.923-.309L6.03 4.88C6.635 4.957 7.3 5 8 5s1.365-.043 1.97-.12zm-.245-.978L8.97.88C8.718-.13 7.282-.13 7.03.88L6.274 3.9C6.8 3.965 7.382 4 8 4c.618 0 1.2-.036 1.725-.098zm4.396 8.613a.5.5 0 0 1 .037.96l-6 2a.5.5 0 0 1-.316 0l-6-2a.5.5 0 0 1 .037-.96l2.391-.598.565-2.257c.862.212 1.964.339 3.165.339s2.303-.127 3.165-.339l.565 2.257 2.391.598z"),
+)
+#let dlm-callout-icon(color, fallback) = {
+  if color == dlm-important-color { return dlm-stop-icon(color) }
+  for (c, viewbox, path) in dlm-callout-icons {
+    if c == color { return dlm-svg-icon(viewbox, path, color) }
+  }
+  text(color, weight: 900)[#fallback]
+}
 
 #let callout(body: [], title: "Callout", background_color: rgb("#dddddd"), icon: none, icon_color: black, body_background_color: white) = {
   block(
@@ -114,7 +134,7 @@
       block(
         fill: background_color.lighten(35%),
         width: 100%,
-        inset: (x: 10pt, y: 7pt))[#set text(weight: 600, fill: dlm-navy, size: 0.95em); #if icon != none [#if icon_color == dlm-important-color { dlm-stop-icon(icon_color) } else if icon_color == dlm-caution-color { dlm-cone-icon(icon_color) } else { text(icon_color, weight: 900)[#icon] } ]#title]) +
+        inset: (x: 10pt, y: 7pt))[#set text(weight: 600, fill: dlm-navy, size: 0.95em); #if icon != none [#dlm-callout-icon(icon_color, icon) ]#title]) +
     if (body != []) {
       block(
         inset: 0pt,
