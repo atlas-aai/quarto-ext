@@ -5,6 +5,38 @@
 source("_common.R")
 ```
 
+
+## Conditional text
+
+There are several ways to include text optionally.
+First, we can use in-line helpers such as `dlm_is_pdf()` or `dlm_is_html()`, which can be used to determine the type of output.
+For example, this is the `r ifelse(dlm_is_pdf(), "PDF", "website")` version of this report.
+
+We can also include or exclude entire paragraphs using the the `.content-visible` class with a div.
+
+::: {.content-visible when-format="html"}
+Read this report chapter by chapter in the browser, or download the complete PDF from the button above.
+:::
+
+::: {.content-visible when-format="typst"}
+The report is also available as a searchable website at <https://dynamiclearningmaps.org>.
+:::
+
+
+## Callouts
+
+::: {.callout-note}
+## A callout note
+
+Every chapter in this template is placeholder content.
+The text shows the conventions of a DLM technical manual, and all data are simulated so that each table, figure, and cross-reference renders in both formats.
+Replace these files with the chapters of your report.
+:::
+
+
+
+
+
 The Dynamic Learning Maps^&reg;^ (DLM^&reg;^) Alternate Assessment System assesses student achievement in English language arts, mathematics, and science for students with the most significant cognitive disabilities in grades 3–8 and high school. The purpose of the system is to improve academic experiences and outcomes for these students by setting high, actionable academic expectations and by providing appropriate and effective supports to educators.
 
 This chapter summarizes the theory of action, the intended uses of results, and the organization of the remaining chapters.
