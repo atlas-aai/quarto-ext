@@ -127,7 +127,7 @@ _extensions/dlm-report/
 ├── html/                 SCSS themes (light, dark, shared rules), cover partial, fonts CSS, small JS
 ├── typst/                Typst template partials (template, show, page, numbering, bibliography)
 ├── assets/               DLM logo (color and white), favicon, ornament SVGs
-└── fonts/                Atkinson Hyperlegible Next, Fira Math, and JetBrains Mono (SIL Open Font License): TTF/OTF for Typst and figures, WOFF2 for the web
+└── fonts/                Atkinson Hyperlegible Next, Fira Math, and Fira Code (SIL Open Font License): TTF/OTF for Typst and figures, WOFF2 for the web
 ```
 
 Fonts are bundled so the PDF looks identical on every machine and the website does not depend on Google Fonts. The report font is Atkinson Hyperlegible Next, designed by the Braille Institute for legibility, and it is used on the website, in the PDF, and in figures. `_common.R` registers the bundled copy for figures when the font is not installed. Set `mainfont` to use a different font in the PDF. Equations use Fira Math (an OpenType math font, bundled) in the PDF and MathJax's Fira font on the website, so math matches the sans-serif text in both formats. Set `mathfont` to use a different math font in the PDF; it must be an OpenType math font such as STIX Two Math or New Computer Modern Math.

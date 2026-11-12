@@ -49,11 +49,6 @@ dlm:
     Insert additional information here, such as a conflict on interest and/or
     funding statement.
 
-execute:
-  echo: false
-  warning: false
-  message: false
-
 format:
   dlm-report-html: default
   dlm-report-typst: default

@@ -11,14 +11,20 @@ contributes:
         - path: dlm-book-typst.lua
           at: post-quarto
       number-sections: true
-      number-depth: 3
+      number-depth: 4
       tbl-cap-location: top
       fig-cap-location: bottom
-      fig-width: 7
-      fig-height: 4.5
+      fig-width: 6
+      fig-asp: 0.618
       fig-dpi: 300
+      knitr:
+        opts_chunk:
+          collapse: true
+      execute:
+        echo: false
+        warning: false
+        message: false
       lang: en-US
-      # APA 7th edition (Zotero Style Repository), used by both formats
       csl: apa.csl
 
     html:
@@ -31,7 +37,7 @@ contributes:
       toc-depth: 3
       toc-title: On this page
       code-copy: true
-      code-overflow: wrap
+      code-overflow: scroll
       anchor-sections: true
       smooth-scroll: true
       link-external-newwindow: true
@@ -54,8 +60,8 @@ contributes:
         - fonts/otf
       papersize: us-letter
       pdf-standard: ua-1
-      # Format citations with Pandoc and the CSL style, as on the website
       citeproc: true
+      link-citations: true
       toc-title: Contents
       toc: true
       toc-depth: 2

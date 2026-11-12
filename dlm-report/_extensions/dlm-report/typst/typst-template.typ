@@ -13,6 +13,7 @@
 #let dlm-ink    = rgb("#1B2733")
 #let dlm-muted  = rgb("#5A6B7B")
 #let dlm-tint   = rgb("#F4F7FA")
+#let dlm-code-bg = rgb("#F5F8FB")
 
 #let dlm-appendix-state = state("appendix-state", none)
 // Set by dlm-report.lua before every level-1 heading:
@@ -29,11 +30,11 @@
 
 #let dlm-heading-numbering(..nums) = {
   let n = nums.pos()
-  if n.len() <= 3 { numbering("1.1", ..n) }
+  if n.len() <= 4 { numbering("1.1", ..n) }
 }
 #let dlm-appendix-heading-numbering(..nums) = {
   let n = nums.pos()
-  if n.len() <= 3 { numbering("A.1", ..n) }
+  if n.len() <= 4 { numbering("A.1", ..n) }
 }
 
 // Is the current page part of the front matter (before the body starts)?
@@ -80,6 +81,24 @@
 }
 
 // Callouts (keeps Quarto's block structure so cross-referenced callouts work) -
+// Important callouts get a stop-sign icon (the website swaps it in dlm.scss).
+// Quarto gives important callouts this icon color and no other type uses it.
+#let dlm-important-color = rgb("#CC1914")
+#let dlm-stop-icon(color) = box(baseline: 12%, width: 0.95em, height: 0.95em, {
+  place(center + horizon, rotate(22.5deg, polygon.regular(vertices: 8, size: 0.95em, fill: color)))
+  place(center + horizon, text(fill: white, weight: 900, size: 0.68em, top-edge: "cap-height", bottom-edge: "baseline")[!])
+})
+
+// Caution callouts get the website's flat traffic cone (Bootstrap Icons
+// "cone-striped") instead of Font Awesome's fire. Quarto gives caution
+// callouts this icon color and no other type uses it.
+#let dlm-caution-color = rgb("#FC5300")
+#let dlm-cone-icon(color) = box(baseline: 12%, pdf.artifact(image(
+  bytes("<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'><path fill='" + color.to-hex() + "' d='M9.97 4.88l.953 3.811C10.158 8.878 9.14 9 8 9c-1.14 0-2.159-.122-2.923-.309L6.03 4.88C6.635 4.957 7.3 5 8 5s1.365-.043 1.97-.12zm-.245-.978L8.97.88C8.718-.13 7.282-.13 7.03.88L6.274 3.9C6.8 3.965 7.382 4 8 4c.618 0 1.2-.036 1.725-.098zm4.396 8.613a.5.5 0 0 1 .037.96l-6 2a.5.5 0 0 1-.316 0l-6-2a.5.5 0 0 1 .037-.96l2.391-.598.565-2.257c.862.212 1.964.339 3.165.339s2.303-.127 3.165-.339l.565 2.257 2.391.598z'/></svg>"),
+  format: "svg",
+  height: 0.95em,
+)))
+
 #let callout(body: [], title: "Callout", background_color: rgb("#dddddd"), icon: none, icon_color: black, body_background_color: white) = {
   block(
     breakable: false,
@@ -95,7 +114,7 @@
       block(
         fill: background_color.lighten(35%),
         width: 100%,
-        inset: (x: 10pt, y: 7pt))[#set text(weight: 600, fill: dlm-navy, size: 0.95em); #if icon != none [#text(icon_color, weight: 900)[#icon] ]#title]) +
+        inset: (x: 10pt, y: 7pt))[#set text(weight: 600, fill: dlm-navy, size: 0.95em); #if icon != none [#if icon_color == dlm-important-color { dlm-stop-icon(icon_color) } else if icon_color == dlm-caution-color { dlm-cone-icon(icon_color) } else { text(icon_color, weight: 900)[#icon] } ]#title]) +
     if (body != []) {
       block(
         inset: 0pt,
@@ -103,6 +122,30 @@
         block(fill: body_background_color, width: 100%, inset: (x: 10pt, y: 8pt), body))
     }
   )
+}
+
+// Code blocks: Pandoc draws highlighted code as one inline raw() per token and
+// ends each line with EndLine(), an inline raw newline. This replaces Pandoc's
+// Skylighting() so the block uses the report's code style and marks itself, so
+// the inline-code box (in dlm-report) leaves its tokens and line breaks alone.
+#let dlm-in-code-block = state("dlm-in-code-block", false)
+#let Skylighting(fill: none, number: false, start: 1, sourcelines) = {
+  let blocks = []
+  let lnum = start - 1
+  for ln in sourcelines {
+    if number {
+      lnum = lnum + 1
+      blocks = blocks + box(width: if start + sourcelines.len() > 999 { 30pt } else { 24pt }, text(fill: rgb("#aaaaaa"), [ #lnum ]))
+    }
+    blocks = blocks + ln + EndLine()
+  }
+  dlm-in-code-block.update(true)
+  {
+    // Comments and output stay upright (the highlighting theme italicizes them)
+    show raw: set text(style: "normal")
+    block(fill: dlm-code-bg, inset: 10pt, radius: 6pt, width: 100%, stroke: 0.75pt + dlm-mist, blocks)
+  }
+  dlm-in-code-block.update(false)
 }
 
 // Sub-figures: same as Quarto's helper but aware of chapter-encoded counters
@@ -241,7 +284,7 @@
   font: ("Atkinson Hyperlegible Next",),
   // Equations need an OpenType math font; Fira Math suits the sans-serif text
   mathfont: ("Fira Math",),
-  codefont: ("JetBrains Mono",),
+  codefont: ("Fira Code",),
   fontsize: 12pt,
   linestretch: 1,
   toc: true,
@@ -429,7 +472,9 @@
       #if it.numbering != none [#counter(heading).display(it.numbering)#h(hsize(8))]#it.body
     ]
   }
-  show heading.where(level: 4): it => block(above: hsize(12), below: hsize(6), text(size: hsize(10.5), weight: 650, fill: dlm-blue, it.body))
+  show heading.where(level: 4): it => block(above: hsize(12), below: hsize(6), text(size: hsize(10.5), weight: 650, fill: dlm-blue)[
+    #if it.numbering != none [#counter(heading).display(it.numbering)#h(hsize(6))]#it.body
+  ])
   show heading.where(level: 5): it => block(above: hsize(10), below: hsize(6), text(size: hsize(10.5), weight: 600, style: "italic", it.body))
 
   // Figures and tables ----------------------------------------------------------
@@ -458,8 +503,12 @@
   show table: it => block(stroke: (bottom: 0.8pt + dlm-navy), it)
 
   // Code ---------------------------------------------------------------------------
-  show raw.where(block: true): set block(fill: dlm-tint, inset: 10pt, radius: 4pt, width: 100%, stroke: (left: 2pt + dlm-sky))
-  show raw.where(block: false): box.with(fill: dlm-tint, inset: (x: 3pt), outset: (y: 2.5pt), radius: 2pt)
+  // Code blocks match the website: plain background, thin border, rounded corners
+  show raw.where(block: true): set block(fill: dlm-code-bg, inset: 10pt, radius: 6pt, width: 100%, stroke: 0.75pt + dlm-mist)
+  // Inline code gets a tinted box; tokens inside highlighted code blocks don't
+  show raw.where(block: false): it => context {
+    if dlm-in-code-block.get() { it } else { box(fill: dlm-tint, inset: (x: 3pt), outset: (y: 2.5pt), radius: 2pt, it) }
+  }
 
   // Quotes and footnotes ----------------------------------------------------
   set quote(block: true)

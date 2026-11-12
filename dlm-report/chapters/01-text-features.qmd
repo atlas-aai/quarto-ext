@@ -1,7 +1,7 @@
-# Overview {#sec-overview}
+# Text Features {#sec-text-features}
 
 ```{r}
-#| label: setup-overview
+#| label: setup-text
 source("_common.R")
 ```
 
@@ -23,69 +23,123 @@ The report is also available as a searchable website at <https://dynamiclearning
 :::
 
 
-## Callouts
+## Callouts {#sec-callouts}
+
+Callouts can be used to draw attention to some text.
+Create a callout with:
+
+````
+::: {.callout-note}
+## Callout title
+
+Here is the callout text.
+:::
+````
 
 ::: {.callout-note}
-## A callout note
+## Note callout
 
-Every chapter in this template is placeholder content.
-The text shows the conventions of a DLM technical manual, and all data are simulated so that each table, figure, and cross-reference renders in both formats.
-Replace these files with the chapters of your report.
+Create a note callout using the `.callout-note` class.
 :::
-
-
-
-
-
-The Dynamic Learning Maps^&reg;^ (DLM^&reg;^) Alternate Assessment System assesses student achievement in English language arts, mathematics, and science for students with the most significant cognitive disabilities in grades 3–8 and high school. The purpose of the system is to improve academic experiences and outcomes for these students by setting high, actionable academic expectations and by providing appropriate and effective supports to educators.
-
-This chapter summarizes the theory of action, the intended uses of results, and the organization of the remaining chapters.
-
-## Theory of Action {#sec-theory-of-action}
-
-The theory of action expresses the belief that high expectations for students with the most significant cognitive disabilities, combined with appropriate educational supports, lead to improved academic outcomes. The theory of action guides the design of the system and frames the validity argument [@kane2013].
 
 ::: {.callout-tip}
-## Writing tip
+## Tip callout
 
-Use `@sec-` labels for every chapter and major section. Cross-references then resolve to "Chapter 2" or "Section 3.1" in both the website and the PDF.
+Create a tip callout using the `.callout-tip` class.
 :::
 
-## Intended Uses {#sec-intended-uses}
+::: {.callout-important}
+## Important callout
 
-Results are intended to support the following uses:
+Create an important callout using the `.callout-important` class.
+:::
 
-1. Report what students know and can do at the end of the year.
-2. Inform instructional planning for the following school year.
-3. Contribute to state accountability models.
-4. Support program evaluation at the school, district, and state levels.
+::: {.callout-warning}
+## Warning callout
 
-Some uses fall outside the design of the system. Results are not intended to support decisions about individual educator effectiveness.
+Create a warning callout using the `.callout-warning` class.
+:::
 
-## Organization of This Manual
+::: {.callout-caution}
+## Caution callout
 
-@tbl-chapter-guide maps each chapter and appendix of the manual to the source of validity evidence it documents.
+Create a caution callout using the `.callout-caution` class.
+:::
+
+## Code
+
+Inline code renders as you would expect (e.g., `function_name()`).
+We can also include code chunks.
 
 ```{r}
-#| label: tbl-chapter-guide
-#| tbl-cap: "Chapter guide"
-guide <- data.frame(
-  Chapter = c("1", "2", "3", "4", "A"),
-  Topic = c(
-    "Overview",
-    "Assessment design and development",
-    "Modeling",
-    "Reliability",
-    "Supplemental tables"
-  ),
-  `Primary source of evidence` = c(
-    "Theory of action",
-    "Test content",
-    "Internal structure",
-    "Internal structure",
-    "Participation"
-  ),
-  check.names = FALSE
-)
-gt(guide)
+#| label: test-code
+#| echo: true
+
+library(tidyverse)
+
+penguins |>
+  as_tibble() |>
+  filter(species == "Adelie")
 ```
+
+## Headings
+
+Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec non ex ultrices, iaculis mi a, egestas orci. Pellentesque rhoncus volutpat arcu, in dignissim sem efficitur vel. Etiam ac lacus ut lorem iaculis porta. Pellentesque massa elit, viverra eget ipsum quis, laoreet mattis erat. Ut libero nibh, mattis ac dictum vitae, efficitur et nulla. Suspendisse volutpat consequat vulputate. Aenean hendrerit efficitur congue. Duis a ex ut nisl congue volutpat. Ut commodo, tellus vel mollis vestibulum, lorem nulla dignissim nisl, ultrices convallis odio augue non odio. Mauris dictum semper quam. Morbi volutpat viverra ipsum ac iaculis.
+
+Etiam finibus ultrices lacinia. Integer feugiat purus porta, venenatis sapien sit amet, eleifend erat. Sed sit amet tincidunt justo, id pellentesque orci. Donec dignissim egestas velit, et molestie orci sagittis eget. Maecenas a placerat quam, eu pharetra orci. Suspendisse congue, orci sed vestibulum fringilla, augue libero feugiat nulla, in accumsan est eros sollicitudin augue. Phasellus sit amet metus sit amet ex blandit iaculis sit amet sed ex. Curabitur tellus tortor, blandit quis ante eget, finibus iaculis urna. Proin sed tincidunt turpis, id dignissim tortor. Quisque ac lacus pellentesque, imperdiet mauris eu, tincidunt est. Mauris facilisis, quam condimentum pharetra porta, diam orci sagittis orci, nec egestas tortor orci et magna. Nam et risus in tellus pulvinar sodales. Sed ligula tellus, consectetur in elit et, blandit condimentum urna. Donec gravida magna a arcu vehicula bibendum. Duis congue neque id eros pulvinar placerat.
+
+### Heading 3 {#sec-heading-3}
+
+Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec non ex ultrices, iaculis mi a, egestas orci. Pellentesque rhoncus volutpat arcu, in dignissim sem efficitur vel. Etiam ac lacus ut lorem iaculis porta. Pellentesque massa elit, viverra eget ipsum quis, laoreet mattis erat. Ut libero nibh, mattis ac dictum vitae, efficitur et nulla. Suspendisse volutpat consequat vulputate. Aenean hendrerit efficitur congue. Duis a ex ut nisl congue volutpat. Ut commodo, tellus vel mollis vestibulum, lorem nulla dignissim nisl, ultrices convallis odio augue non odio. Mauris dictum semper quam. Morbi volutpat viverra ipsum ac iaculis.
+
+#### Heading 4
+
+Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec non ex ultrices, iaculis mi a, egestas orci. Pellentesque rhoncus volutpat arcu, in dignissim sem efficitur vel. Etiam ac lacus ut lorem iaculis porta. Pellentesque massa elit, viverra eget ipsum quis, laoreet mattis erat. Ut libero nibh, mattis ac dictum vitae, efficitur et nulla. Suspendisse volutpat consequat vulputate. Aenean hendrerit efficitur congue. Duis a ex ut nisl congue volutpat. Ut commodo, tellus vel mollis vestibulum, lorem nulla dignissim nisl, ultrices convallis odio augue non odio. Mauris dictum semper quam. Morbi volutpat viverra ipsum ac iaculis.
+
+#### Heading 4
+
+Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec non ex ultrices, iaculis mi a, egestas orci. Pellentesque rhoncus volutpat arcu, in dignissim sem efficitur vel. Etiam ac lacus ut lorem iaculis porta. Pellentesque massa elit, viverra eget ipsum quis, laoreet mattis erat. Ut libero nibh, mattis ac dictum vitae, efficitur et nulla. Suspendisse volutpat consequat vulputate. Aenean hendrerit efficitur congue. Duis a ex ut nisl congue volutpat. Ut commodo, tellus vel mollis vestibulum, lorem nulla dignissim nisl, ultrices convallis odio augue non odio. Mauris dictum semper quam. Morbi volutpat viverra ipsum ac iaculis.
+
+### Heading 3
+
+Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec non ex ultrices, iaculis mi a, egestas orci. Pellentesque rhoncus volutpat arcu, in dignissim sem efficitur vel. Etiam ac lacus ut lorem iaculis porta. Pellentesque massa elit, viverra eget ipsum quis, laoreet mattis erat. Ut libero nibh, mattis ac dictum vitae, efficitur et nulla. Suspendisse volutpat consequat vulputate. Aenean hendrerit efficitur congue. Duis a ex ut nisl congue volutpat. Ut commodo, tellus vel mollis vestibulum, lorem nulla dignissim nisl, ultrices convallis odio augue non odio. Mauris dictum semper quam. Morbi volutpat viverra ipsum ac iaculis.
+
+## Cross references
+
+We can cross reference sections.
+For example, callouts are described in @sec-callouts.
+Or we can reference subheadings such as @sec-heading-3.
+Or we can reference another chapter.
+Figures are described in @sec-figures.
+
+We can also reference tables and figures like @tbl-example1 and @fig-example1.
+
+
+```{r}
+#| label: tbl-example1
+#| tbl-cap: An example table caption.
+
+set.seed(2015)
+tibble(
+  state = sample(state.name, size = 5),
+  n = sample(1000:100000, size = 5)
+) |>
+  gt() |>
+  gt_atlas()
+```
+
+```{r}
+#| label: fig-example1
+#| fig-cap: An example figure caption
+#| fig-alt: A scatterplot of penguins.
+
+ggplot(penguins, aes(x = flipper_len, y = bill_len)) +
+  geom_point(aes(color = species, shape = species))
+```
+
+
+## Citations
+
+We can include a normal reference [@measr].
+Or we can include in text, such as with @clark2016.
+We can also include an abbreviation, like for the loglinear cognitive diagnostic model [LCDM\; @henson2009].

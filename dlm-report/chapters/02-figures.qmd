@@ -1,4 +1,4 @@
-# Assessment Design and Development {#sec-design}
+# Figures {#sec-figures}
 
 ```{r}
 #| label: setup-design

@@ -32,10 +32,10 @@ document.addEventListener("DOMContentLoaded", () => {
   // Collapse toggles (e.g., the sidebar's "Appendices") are buttons, not landmarks
   document.querySelectorAll("a[role='navigation'][data-bs-toggle]").forEach((el) => el.setAttribute("role", "button"));
 
-  // Tables that scroll sideways must be reachable by keyboard
+  // Tables and code blocks that scroll sideways must be reachable by keyboard
   const scrollers = document.querySelectorAll(
     ".cell-output-display:has(> table), .cell-output-display:has(> .table), .quarto-float:has(table), " +
-    "div:has(> table.gt_table)"
+    "div:has(> table.gt_table), div.sourceCode"
   );
   const updateScrollers = () => scrollers.forEach((el) => {
     if (el.scrollWidth > el.clientWidth) {

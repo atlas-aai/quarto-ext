@@ -17,11 +17,7 @@ $$ {#eq-lcdm}
 
 The intercept $\lambda_{i,0}$ determines the probability of a correct response for a nonmaster, and the main effect $\lambda_{i,1}$ is the increase in log-odds associated with mastery. Models are estimated with the **measr** package [@measr].
 
-::: {.callout-important}
-## Fungible item parameters
 
-When items measuring a linkage level are fungible, a single intercept and main effect are estimated for all items. The fungible model reduces the number of parameters substantially for linkage levels with small samples.
-:::
 
 ## Parameter Estimates {#sec-parameters}
 

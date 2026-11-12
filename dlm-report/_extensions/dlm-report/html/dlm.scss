@@ -263,13 +263,26 @@ figcaption, caption, .figure-caption, .quarto-float-caption, .quarto-float-capti
   .callout-header { font-weight: 650; }
   .callout-title-container { font-weight: 650; color: $dlm-heading; }
 }
+// Important callouts use a stop-sign icon (the PDF draws it in callout()),
+// drawn as a mask so it keeps Quarto's important icon color
+div.callout-important.callout .callout-icon::before {
+  background-image: none !important;
+  background-color: shade-color($red, 10%);
+  -webkit-mask: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'><path fill-rule='evenodd' d='M15.30 11.02 L11.02 15.30 L4.98 15.30 L0.70 11.02 L0.70 4.98 L4.98 0.70 L11.02 0.70 L15.30 4.98 Z M7.1 3.6 H8.9 L8.6 9.4 H7.4 Z M8 10.6 a1.05 1.05 0 1 0 0.001 0 Z'/></svg>") center / contain no-repeat;
+  mask: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'><path fill-rule='evenodd' d='M15.30 11.02 L11.02 15.30 L4.98 15.30 L0.70 11.02 L0.70 4.98 L4.98 0.70 L11.02 0.70 L15.30 4.98 Z M7.1 3.6 H8.9 L8.6 9.4 H7.4 Z M8 10.6 a1.05 1.05 0 1 0 0.001 0 Z'/></svg>") center / contain no-repeat;
+}
 
 // Code ------------------------------------------------------------------------
-div.sourceCode, pre.sourceCode {
+// The border belongs to the outer box, which is what scrolls sideways; a
+// border on the inner <pre> would show as a stray line when scrolled
+div.sourceCode {
   border-radius: 8px;
   border: 1px solid $dlm-border;
 }
+div.sourceCode pre.sourceCode { border: none; }
 code { font-size: 0.88em; }
+// Comments and output stay upright (the highlighting theme italicizes them)
+div.sourceCode code span { font-style: normal; }
 p code:not(.sourceCode), li code:not(.sourceCode) {
   background: $dlm-code-bg;
   border-radius: 4px;

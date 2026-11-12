@@ -63,7 +63,7 @@ $if(mathfont)$
   mathfont: ($for(mathfont)$"$mathfont$",$endfor$ "Fira Math"),
 $endif$
 $if(codefont)$
-  codefont: ($for(codefont)$"$codefont$",$endfor$ "JetBrains Mono"),
+  codefont: ($for(codefont)$"$codefont$",$endfor$ "Fira Code"),
 $endif$
 $if(fontsize)$
   fontsize: $fontsize$,

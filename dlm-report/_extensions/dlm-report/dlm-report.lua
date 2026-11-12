@@ -210,7 +210,7 @@ function Meta(meta)
       resources = {
         "fonts/woff2/atkinson-hyperlegible-next-wght-normal.woff2",
         "fonts/woff2/atkinson-hyperlegible-next-wght-italic.woff2",
-        "fonts/woff2/jetbrains-mono-latin-wght-normal.woff2",
+        "fonts/woff2/fira-code-wght-normal.woff2",
         "assets/dlm-logo.png",
         "assets/dlm-logo-white.png",
         "assets/hero-left.svg",

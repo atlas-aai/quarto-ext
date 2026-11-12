@@ -37,3 +37,105 @@ set_theme(ratlas::theme_atlas(
   accent = dlm_colors[["blue"]],
   continuous = unname(dlm_colors[c("mist", "navy")])
 ))
+
+# gt tables --------------------------------------------------------------------
+gt_atlas <- function(
+  data,
+  dec_dig = 1,
+  corr_dig = 3,
+  fmt_extreme = TRUE,
+  ...
+) {
+  # general formatting -----
+  data <- data |>
+    gt::cols_align_decimal(columns = dplyr::where(is.numeric))
+
+  # number formatting -----
+  data <- data |>
+    ## integers
+    gt::fmt_number(columns = dplyr::where(is.integer), decimals = 0) |>
+
+    ## numerics
+    gt::fmt_number(
+      columns = dplyr::where(\(x) {
+        is.double(x) && !all(dplyr::between(x, -1, 1))
+      }),
+      decimals = dec_dig
+    ) |>
+
+    ## proportions and correlations bounded [-1, 1]
+    gt::fmt_number(
+      columns = dplyr::where(\(x) {
+        is.double(x) && all(dplyr::between(x, -1, 1))
+      }),
+      decimals = corr_dig
+    )
+
+  # extreme value formatting -----
+  if (fmt_extreme) {
+    data <- data |>
+      gt::sub_small_vals(
+        columns = dplyr::where(\(x) {
+          is.double(x) && !all(dplyr::between(x, -1, 1))
+        }),
+        threshold = 1 / (10^dec_dig)
+      ) |>
+      gt::sub_large_vals(
+        columns = dplyr::where(\(x) {
+          is.double(x) && !all(dplyr::between(x, -1, 1))
+        }),
+        threshold = 100 - (1 / (10^dec_dig)),
+        large_pattern = ">{x}"
+      ) |>
+      gt::sub_large_vals(
+        columns = dplyr::where(\(x) {
+          is.double(x) && all(dplyr::between(x, -1, 1))
+        }),
+        threshold = 1 - (1 / (10^corr_dig)),
+        large_pattern = ">{x}"
+      ) |>
+      gt::sub_large_vals(
+        columns = dplyr::where(\(x) {
+          is.double(x) && all(dplyr::between(x, -1, 1))
+        }),
+        threshold = 1 - (1 / (10^corr_dig)),
+        large_pattern = "<\U2212{x}",
+        sign = "-"
+      )
+  }
+
+  # group formatting -----
+  if (length(data$`_row_groups`)) {
+    data <- data |>
+      gt::tab_style(
+        style = gt::cell_text(indent = gt::px(20)),
+        locations = gt::cells_body(
+          columns = 1,
+          rows = gt::everything()
+        )
+      )
+  }
+
+  # table styling -----
+  data <- data |>
+    gt::text_transform(
+      fn = \(x) gsub("0\\.", ".", x),
+      locations = gt::cells_body(
+        columns = dplyr::where(\(x) {
+          is.double(x) && all(dplyr::between(x, -1, 1))
+        }),
+        rows = gt::everything()
+      )
+    ) |>
+    gt::tab_options(
+      table.align = "left",
+    ) |>
+    gt::tab_style(
+      style = list(
+        gt::cell_text(align = "center", v_align = "middle")
+      ),
+      locations = gt::cells_column_labels(gt::everything())
+    )
+
+  data
+}
