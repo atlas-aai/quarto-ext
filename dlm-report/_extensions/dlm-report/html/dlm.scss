@@ -226,6 +226,12 @@ main .gt_table {
   .gt_striped { background-color: $dlm-zebra !important; }
 }
 
+// `::: {.center}` centers its text and `::: {.hanging}` gives each paragraph
+// a 0.5in hanging indent, as in APA references (the PDF does both in
+// dlm-report.lua)
+.center { text-align: center; }
+.hanging p { padding-left: 0.5in; text-indent: -0.5in; }
+
 // Captions --------------------------------------------------------------------
 figcaption, caption, .figure-caption, .quarto-float-caption, .quarto-float-caption-top {
   color: $dlm-muted;
@@ -329,7 +335,9 @@ p code:not(.sourceCode), li code:not(.sourceCode) {
   background: $dlm-hero-bg;
   border: 1px solid $dlm-border;
   border-radius: 20px;
-  padding: clamp(5.5rem, 9vw, 7rem) clamp(1.5rem, 5vw, 3.25rem) clamp(2rem, 5vw, 3rem);
+  // Bottom padding keeps the cover's content (including the open citation
+  // panel) clear of the logo in the bottom-right corner
+  padding: clamp(5.5rem, 9vw, 7rem) clamp(1.5rem, 5vw, 3.25rem) 6rem;
   margin: 0.5rem 0 3rem;
   min-height: 420px;
 
@@ -415,14 +423,18 @@ p code:not(.sourceCode), li code:not(.sourceCode) {
       font-weight: 600;
       width: fit-content;
     }
-    p {
+    // Rights statement: plain text above the highlighted citation
+    .dlm-cite-rights { margin: 0.6rem 0 0; max-width: none; }
+    .dlm-cite-body {
       margin: 0.6rem 0 0;
       padding: 0.8rem 1rem;
       background: $dlm-surface;
       border-left: 3px solid $dlm-sky;
       border-radius: 0 8px 8px 0;
-      max-width: none;
+      p { margin: 0; max-width: none; }
     }
+    // APA hanging indent, as in the PDF
+    .dlm-cite-ref { padding-left: 0.5in; text-indent: -0.5in; }
   }
 
   .dlm-cover-logo {

@@ -10,6 +10,7 @@ Shared metadata handling for the DLM report formats.
 ]]
 
 local ATLAS = "Accessible Teaching, Learning, and Assessment Systems (ATLAS), University of Kansas"
+local RIGHTS = "**All rights reserved.** Any or all portions of this document may be reproduced and distributed without prior permission provided the source is cited as:"
 
 local function str(x)
   if x == nil then return nil end
@@ -40,6 +41,10 @@ local function ensure_dlm(meta)
   end
   if dlm["report-type"] == nil then
     dlm["report-type"] = pandoc.Inlines("Technical Report")
+  end
+  -- Shown above the suggested citation; `rights: false` drops it
+  if dlm.rights == nil then
+    dlm.rights = pandoc.utils.blocks_to_inlines(pandoc.read(RIGHTS, "markdown").blocks)
   end
   meta.dlm = dlm
   return meta
@@ -137,6 +142,23 @@ function Div(el)
   if el.classes:includes("breakable") then
     return {
       pandoc.RawBlock("typst", "#[#show figure: set block(breakable: true)"),
+      el,
+      pandoc.RawBlock("typst", "]"),
+    }
+  end
+  -- `::: {.center}` centers its text (the website does this in dlm.scss)
+  if el.classes:includes("center") then
+    return {
+      pandoc.RawBlock("typst", "#align(center)["),
+      el,
+      pandoc.RawBlock("typst", "]"),
+    }
+  end
+  -- `::: {.hanging}` gives each paragraph a 0.5in hanging indent, as in APA
+  -- references (the website does this in dlm.scss)
+  if el.classes:includes("hanging") then
+    return {
+      pandoc.RawBlock("typst", "#[#set par(hanging-indent: 0.5in)"),
       el,
       pandoc.RawBlock("typst", "]"),
     }

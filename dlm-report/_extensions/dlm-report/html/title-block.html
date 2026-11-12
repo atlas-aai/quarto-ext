@@ -20,7 +20,10 @@ $if(dlm-cover)$
     $if(dlm.citation)$
     <details class="dlm-cite">
       <summary>Suggested citation</summary>
-      <p>$dlm.citation$</p>
+      $if(dlm.rights)$<p class="dlm-cite-rights">$dlm.rights$</p>$endif$
+      <div class="dlm-cite-body">
+        <p class="dlm-cite-ref">$dlm.citation$</p>
+      </div>
     </details>
     $endif$
   </div>

@@ -4,9 +4,9 @@ project:
   execute-dir: project
 
 book:
-  title: "2025–2026 Technical Manual"
-  subtitle: "Year-End Model"
-  date: "2026-12-01"
+  title: "Report Title"
+  subtitle: "A subtitle"
+  date: today
   date-format: "MMMM YYYY"
   output-file: "dlm-ye-techmanual-2025-2026"
   downloads: [pdf]
@@ -28,29 +28,26 @@ book:
         href: https://dynamiclearningmaps.org
   chapters:
     - index.qmd
-    - chapters/01-overview.qmd
-    - chapters/02-design.qmd
-    - chapters/03-modeling.qmd
-    - chapters/04-reliability.qmd
+    - chapters/01-text-features.qmd
+    - chapters/02-figures.qmd
+    - chapters/03-tables.qmd
     - references.qmd
   appendices:
-    - appendices/a-supplemental-tables.qmd
+    - appendices/a-supplemental-info.qmd
 
 bibliography: bib/references.bib
 
 # DLM report metadata (used by both the website and the PDF)
 dlm:
-  report-type: "Technical Manual"
+  report-type: "Report Type"
   divider: true          # PDF divider pages: true, false, or after-first
-  running-title: "2025–2026 Technical Manual · Year-End Model"
+  running-title: "Running title"
   citation: >-
-    Dynamic Learning Maps Consortium. (2026). *2025–2026 Technical
-    Manual—Year-End Model*. University of Kansas, Accessible Teaching,
-    Learning, and Assessment Systems.
+    Dynamic Learning Maps Consortium. (2026). *Report title: A subtitle*.
+    University of Kansas; Accessible Teaching, Learning, and Assessment Systems.
   funding: >-
-    This template ships with placeholder content and simulated data. Replace
-    this paragraph with the funding statement and disclaimers that apply to
-    the report.
+    Insert additional information here, such as a conflict on interest and/or
+    funding statement.
 
 execute:
   echo: false

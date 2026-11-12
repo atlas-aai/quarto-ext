@@ -29,6 +29,9 @@ $endif$
 $if(date)$
   date: [$date$],
 $endif$
+$if(dlm.rights)$
+  rights: [$dlm.rights$],
+$endif$
 $if(dlm.citation)$
   citation: [$dlm.citation$],
 $endif$

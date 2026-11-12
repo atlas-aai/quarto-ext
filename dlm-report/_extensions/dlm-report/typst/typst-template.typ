@@ -195,7 +195,7 @@
 }
 
 // Colophon (inside cover) ---------------------------------------------------------
-#let dlm-colophon(citation: none, copyright: none, publisher: none, funding: none, extra: none, fontsize: 12pt) = {
+#let dlm-colophon(citation: none, rights: none, copyright: none, publisher: none, funding: none, extra: none, fontsize: 12pt) = {
   page(header: none, footer: none, background: none, foreground: none)[
     #set text(size: fontsize, fill: dlm-ink)
     #set par(justify: false, leading: 0.6em, spacing: 0.9em)
@@ -204,7 +204,8 @@
       #if citation != none [
         #text(weight: 700, fill: dlm-navy)[Suggested citation]
         #v(4pt)
-        #par(hanging-indent: 1.5em)[#citation]
+        #if rights != none [#par[#rights] #v(10pt)]
+        #par(hanging-indent: 0.5in)[#citation]
         #v(10pt)
       ]
       #if funding != none [
@@ -229,6 +230,7 @@
   authors: (),
   date: none,
   citation: none,
+  rights: none,
   copyright: none,
   publisher: none,
   funding: none,
@@ -482,7 +484,7 @@
   // Front matter -------------------------------------------------------------------------
   if cover and title != none {
     dlm-cover(title: title, subtitle: subtitle, report-type: report-type, authors: authors, date: date, report-number: report-number, assets: assets, fontsize: fontsize)
-    dlm-colophon(citation: citation, copyright: copyright, publisher: publisher, funding: funding, extra: colophon-extra, fontsize: fontsize)
+    dlm-colophon(citation: citation, rights: rights, copyright: copyright, publisher: publisher, funding: funding, extra: colophon-extra, fontsize: fontsize)
   }
 
   let front-heading(t) = {

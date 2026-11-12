@@ -55,6 +55,7 @@ All options live under the `dlm` key and apply to both formats.
 | `report-number` | Report number shown on the cover | none |
 | `running-title` | Short title for PDF running heads | `title` |
 | `citation` | Suggested citation on the PDF colophon and the website cover | none |
+| `rights` | Statement shown above the suggested citation; `false` to omit it | "**All rights reserved.** Any or all portions of this document may be reproduced…" |
 | `funding` | Funding statement or disclaimer on the PDF colophon | none |
 | `colophon` | Any extra text for the top of the colophon page | none |
 | `copyright` | Copyright line | `Copyright © <current year>` |
@@ -74,6 +75,8 @@ Standard Quarto options still work: `toc`, `toc-depth`, `lof`, `lot`, `number-de
 - In the PDF, each table stays on one page with its caption. For a table too long for one page, add `#| classes: breakable` to its chunk (or wrap it in `::: {.breakable}`); it then splits across pages and repeats its header row, like kableExtra's `longtable`.
 - Put `::: {#refs}` where the reference list belongs. Citations and references are formatted by Pandoc's citeproc with the extension's `apa.csl` (APA 7th edition, from the Zotero Style Repository) in both formats, so the website and the PDF match. Add sources to `bib/references.bib`, which `_quarto.yml` sets as the `bibliography`. To use a different style, set `csl` in `_quarto.yml`; it overrides the extension's default.
 - To put text and a citation in the same parentheses, escape the semicolon: `[DCMs\; @rupp2010]` gives "(DCMs; Rupp et al., 2010)". An unescaped `;` ends the citation group.
+- Wrap text in `::: {.center}` to center it, or in `::: {.hanging}` to give each paragraph a 0.5in hanging indent (as in APA references), on the website and in the PDF.
+- Insert values from `_quarto.yml` with the `meta` shortcode, using dots for nested keys: `{{< meta dlm.citation >}}` inserts the suggested citation, formatting included.
 - Start every chapter with a setup chunk that runs `source("_common.R")`. Quarto renders each chapter in a fresh R session, so packages, helpers, and data a chapter needs must be loaded there. Put anything shared across chapters in `_common.R`.
 - Figures use `ratlas::theme_atlas()`, set as the default ggplot2 theme in `_common.R` with the DLM ink, accent, and a mist-to-navy continuous ramp. Discrete scales use its colorblind-safe Okabe-Ito palette, so plots need no theme or scale calls. Install ratlas with `pak::pak("atlas-aai/ratlas")`. `R/dlm-theme.R` provides `dlm_colors` for single-color marks and annotations.
 
