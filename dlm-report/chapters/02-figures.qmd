@@ -3,64 +3,139 @@
 ```{r}
 #| label: setup-design
 source("_common.R")
-```
 
-This chapter describes the design of testlets, the item-writing process, and the external review of items and testlets. Assessment content is organized into testlets, short sets of items that share a common engagement activity.
+set.seed(2015)
+student_n <- sample(10000:20000, size = 1)
 
-## Testlet Pool {#sec-testlet-pool}
-
-@tbl-pool summarizes the operational testlet pool by subject and grade band. Counts are simulated for demonstration.
-
-```{r}
-#| label: tbl-pool
-#| tbl-cap: "Operational testlet pool by subject and grade band (simulated)"
-set.seed(2026)
-pool <- expand.grid(
-  `Grade band` = c("3–5", "6–8", "9–12"),
-  Subject = c("English language arts", "Mathematics", "Science"),
-  stringsAsFactors = FALSE
-)
-pool <- pool[, c("Subject", "Grade band")]
-pool$Testlets <- sample(180:420, nrow(pool))
-pool$Items <- pool$Testlets * sample(3:5, nrow(pool), replace = TRUE)
-pool$`Field test (%)` <- runif(nrow(pool), 8, 18)
-gt(pool) |>
-  fmt_integer(c(Testlets, Items)) |>
-  fmt_number(`Field test (%)`, decimals = 1)
-```
-
-## External Review {#sec-external-review}
-
-Panelists review every testlet for accessibility, content, and bias and sensitivity before field testing. @fig-review shows the distribution of review decisions across rounds.
-
-```{r}
-#| label: fig-review
-#| fig-cap: "Distribution of external review decisions by review round (simulated)"
-#| fig-alt: "Stacked bar chart showing that most testlets were accepted in each review round, with a small share revised and very few rejected."
-review <- data.frame(
-  round = rep(paste("Round", 1:4), each = 3),
-  decision = factor(
-    rep(c("Accept", "Revise", "Reject"), 4),
-    levels = c("Reject", "Revise", "Accept")
+example_dat <- tibble(
+  id = dcmdata::generate_ids(n = student_n, character = 5),
+  subject = sample(
+    c("English language arts", "Mathematics"),
+    size = student_n,
+    replace = TRUE
   ),
-  n = c(312, 48, 6, 290, 41, 9, 334, 29, 4, 301, 37, 5)
+  grade = sample(
+    c(3:12),
+    size = student_n,
+    prob = c(1, 1, 1, 1, 1, 1, 0.1, 0.1, 1, 0.1),
+    replace = TRUE
+  ),
+  pl = factor(
+    sample(
+      c("Emerging", "Approaching the Target", "At Target", "Advanced"),
+      size = student_n,
+      replace = TRUE
+    ),
+    levels = c("Emerging", "Approaching the Target", "At Target", "Advanced")
+  )
 )
-ggplot(review, aes(x = round, y = n, fill = decision)) +
-  geom_col(width = 0.65) +
-  scale_fill_discrete(breaks = c("Accept", "Revise", "Reject")) +
-  labs(x = NULL, y = "Testlets", fill = NULL)
 ```
 
-Most testlets were accepted without revision. Panelists most often recommended revisions to the engagement activity, which is consistent with prior years [@clark2016].
+This chapter focuses on figures.
+The Typst output format enforces A-2a and UA-1 standards, meaning that all figures are required to have alternative text specified via the `fig-alt` chunk option.
+If there are any figures without alternative text specified, the render will fail.
 
-### Accessibility Review
+## Standard figures
 
-Accessibility panelists evaluate whether testlets can be administered with the full range of supports available in the system. Supports include alternate forms for students who are blind or have visual impairments, as well as signed and read-aloud presentation.
+@fig-standard is a standard figure with the default figure size and aspect ratio.
 
-### Bias and Sensitivity Review
+```{r}
+#| label: fig-standard
+#| fig-cap: |
+#|   A standard figure with default formatting and sizing
+#| fig-alt: A standard bar graph.
 
-Bias and sensitivity panelists evaluate whether testlets contain content that could disadvantage a subgroup of students. @eq-pvalue gives the standardized difference used to flag items for review.
+ggplot(example_dat, aes(x = factor(grade))) +
+  geom_bar(aes(fill = fct_rev(pl)), position = position_fill()) +
+  scale_fill_okabeito(limits = levels(example_dat$pl)) +
+  labs(x = "Grade", y = "Percent of Students", fill = NULL)
+```
 
-$$
-\delta_i = \frac{\bar{p}_{i,\text{focal}} - \bar{p}_{i,\text{reference}}}{\sqrt{\bar{p}_i (1 - \bar{p}_i)}}
-$$ {#eq-pvalue}
+We can also add facets and change the aspect ratio, as shown in @fig-facets.
+
+```{r}
+#| label: fig-facets
+#| fig-asp: 1.4
+#| fig-cap: A faceted plot with a vertical aspect ratio
+#| fig-alt: A faceted plot.
+
+ggplot(example_dat, aes(x = factor(grade))) +
+  facet_wrap(~subject, nrow = 2, scales = "free_x") +
+  geom_bar(aes(fill = fct_rev(pl)), position = position_fill()) +
+  scale_fill_okabeito(limits = levels(example_dat$pl)) +
+  labs(x = "Grade", y = "Percent of Students", fill = NULL)
+```
+
+## Adding symbols to plots
+
+@fig-markdown shows an example of including markdown formatting and other symbols (e.g., greek letters) in a plot.
+
+```{r}
+#| label: fig-markdown
+#| fig-cap: Adding symbols and markdown to figures
+#| fig-alt: A figure with markdown formatting and a caption with greek letters.
+
+labels <- example_dat |>
+  count(grade) |>
+  mutate(label = paste0("Grade ", grade, "<br>(*n* = ", fmt_count(n), ")")) |>
+  select(-n)
+
+example_dat |>
+  left_join(labels, by = "grade") |>
+  mutate(label = factor(label, levels = labels$label)) |>
+  filter(grade %in% 3:5) |>
+  ggplot(aes(x = factor(label))) +
+  geom_bar(aes(fill = fct_rev(pl)), position = position_fill()) +
+  scale_fill_okabeito(limits = levels(example_dat$pl)) +
+  labs(
+    x = NULL,
+    y = "Percent of Students",
+    fill = NULL,
+    caption = "&beta;^2^ = 123.2"
+  )
+```
+
+
+## Complex figure captions
+
+For captions that require markdown formatting, we recommend setting the figure within a div, such as:
+
+````markdown
+::: {#fig-pct-proficient fig-scap="Percentage of students proficient by grade"}
+`r''````{r}
+#| fig-alt: |
+#|   Line plot showing the percentage of student proficient by grade and
+#|   subject.
+
+example_dat |>
+  mutate(proficient = pl %in% c("At Target", "Advanced")) |>
+  summarize(pct_proficient = mean(proficient), .by = c(grade, subject)) |>
+  ggplot(aes(x = factor(grade), y = pct_proficient)) +
+  facet_grid(cols = vars(subject)) +
+  geom_line(group = 1) +
+  labs(x = "Grade", y = "% Proficient")
+```
+
+Percentage of student proficient by grade (*N* = `r knitr::inline_expr("fmt_count(nrow(example_dat))")`)
+
+:::
+````
+
+::: {#fig-pct-proficient fig-scap="Percentage of students proficient by grade"}
+```{r}
+#| fig-alt: |
+#|   Line plot showing the percentage of student proficient by grade and
+#|   subject.
+
+example_dat |>
+  mutate(proficient = pl %in% c("At Target", "Advanced")) |>
+  summarize(pct_proficient = mean(proficient), .by = c(grade, subject)) |>
+  ggplot(aes(x = factor(grade), y = pct_proficient)) +
+  facet_grid(cols = vars(subject)) +
+  geom_line(group = 1) +
+  labs(x = "Grade", y = "% Proficient")
+```
+
+Percentage of student proficient by grade (*N* = `r fmt_count(nrow(example_dat))`)
+
+:::
