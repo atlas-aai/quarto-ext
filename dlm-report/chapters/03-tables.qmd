@@ -11,9 +11,6 @@ The DLM assessments are scored with diagnostic classification models [DCMs\; @ru
 
 Each linkage level is calibrated with a log-linear cognitive diagnosis model [LCDM\; @henson2009] that measures a single attribute. For item $i$ and a student with mastery status $\alpha \in \{0, 1\}$, the probability of a correct response is given by @eq-lcdm.
 
-$$
-P(X_i = 1 \mid \alpha) = \frac{\exp(\lambda_{i,0} + \lambda_{i,1}\alpha)}{1 + \exp(\lambda_{i,0} + \lambda_{i,1}\alpha)}
-$$ {#eq-lcdm}
 
 The intercept $\lambda_{i,0}$ determines the probability of a correct response for a nonmaster, and the main effect $\lambda_{i,1}$ is the increase in log-odds associated with mastery. Models are estimated with the **measr** package [@measr].
 
