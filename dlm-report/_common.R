@@ -8,6 +8,10 @@
 #   source("_common.R")
 #   ```
 
+options(tidyverse.quiet = TRUE)
+
+library(tidyverse)
+library(ratlas)
 library(ggplot2)
 library(gt)
 
