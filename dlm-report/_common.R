@@ -32,6 +32,14 @@ if (!"Atkinson Hyperlegible Next" %in% systemfonts::system_fonts()$family) {
 }
 knitr::opts_chunk$set(dev = "ragg_png")
 
+# Figure notes: knitr reads `fig-note` as its own `fig.note` option, which
+# Quarto drops. Copy it to an option Quarto passes through to the output, where
+# the extension's dlm-fig-note.lua filter adds the note below the caption.
+knitr::opts_hooks$set(fig.note = function(options) {
+  options[["fig-note"]] <- options[["fig.note"]]
+  options
+})
+
 # Figures: the ATLAS ggplot2 theme with DLM colors for text, accents, and
 # continuous scales. Discrete scales use theme_atlas()'s Okabe-Ito palette,
 # which is colorblind safe.

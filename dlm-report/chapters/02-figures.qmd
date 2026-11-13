@@ -96,13 +96,17 @@ example_dat |>
 ```
 
 
-## Complex figure captions
+## Complex figure captions {#sec-complex-fig}
 
-For captions that require markdown formatting, we recommend setting the figure within a div, such as:
+For captions that require markdown formatting, we recommend setting the figure within a div as shown below.
+Additionally, can provide a `fig-scap`, which is a shorter version of the caption.
+The `fig-scap` will be printed in the List of Figures at the beginning of the PDF document, whereas the full caption will be used in the text.
+When using the div approach below, the full caption is included after the R chunk that generates the figure.
 
 ````markdown
 ::: {#fig-pct-proficient fig-scap="Percentage of students proficient by grade"}
-`r''````{r}
+
+`r ''````{r}
 #| fig-alt: |
 #|   Line plot showing the percentage of student proficient by grade and
 #|   subject.
@@ -122,9 +126,10 @@ Percentage of student proficient by grade (*N* = `r knitr::inline_expr("fmt_coun
 ````
 
 ::: {#fig-pct-proficient fig-scap="Percentage of students proficient by grade"}
+
 ```{r}
 #| fig-alt: |
-#|   Line plot showing the percentage of student proficient by grade and
+#|   Line plot showing the percentage of students proficient by grade and
 #|   subject.
 
 example_dat |>
@@ -136,6 +141,28 @@ example_dat |>
   labs(x = "Grade", y = "% Proficient")
 ```
 
-Percentage of student proficient by grade (*N* = `r fmt_count(nrow(example_dat))`)
+Percentage of students proficient by grade (*N* = `r fmt_count(nrow(example_dat))`)
 
 :::
+
+## Figure notes
+
+Use the `fig-note` chunk option to add a note below a figure's caption, as shown in @fig-note.
+The note is formatted as markdown and is left out of the List of Figures.
+For a figure placed in a div, `fig-note` can be set as an attribute on the div instead, similar to `fig-scap` in @sec-sec-complex-fig (e.g., `::: {#fig-example fig-note="..."}`).
+
+```{r}
+#| label: fig-note
+#| fig-cap: Distribution of performance levels for grades 3--8
+#| fig-note: Grades with fewer than 20 students (*n* < 20) were omitted.
+#| fig-alt: |
+#|   Stacked bar graph showing the percentage of students at each performance
+#|   level in grades 3 through 8.
+
+example_dat |>
+  filter(grade %in% 3:8) |>
+  ggplot(aes(x = factor(grade))) +
+  geom_bar(aes(fill = fct_rev(pl)), position = position_fill()) +
+  scale_fill_okabeito(limits = levels(example_dat$pl)) +
+  labs(x = "Grade", y = "Percent of Students", fill = NULL)
+```

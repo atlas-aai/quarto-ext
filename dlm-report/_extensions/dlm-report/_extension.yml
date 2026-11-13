@@ -8,6 +8,8 @@ contributes:
       filters:
         - path: dlm-report.lua
           at: pre-quarto
+        - path: dlm-fig-note.lua
+          at: post-quarto
         - path: dlm-book-typst.lua
           at: post-quarto
       number-sections: true

@@ -241,6 +241,14 @@ figcaption, caption, .figure-caption, .quarto-float-caption, .quarto-float-capti
 }
 .quarto-float figcaption, .quarto-float-caption-top, .quarto-float-caption-bottom,
 .quarto-figure-center > figure > figcaption { text-align: left !important; }
+// Figure notes (`fig-note`) sit on their own line, tight below the caption
+// (as in the PDF)
+.dlm-fig-note {
+  display: block;
+  margin-top: 0;
+  font-size: 0.9em;
+  line-height: 1.4;
+}
 .dlm-cap-label {
   color: $dlm-heading;
   font-weight: 700;

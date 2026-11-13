@@ -7,6 +7,10 @@ parts and appendices are swapped for calls into the DLM Typst template.
 Also gives every equation alt text (its TeX source), which PDF/UA-1 requires,
 and drops gt's default styling from gt tables so the template's table design
 applies (styling added with gt::tab_style() is kept).
+
+Short captions: a `fig-scap` or `tbl-scap` attribute on a figure or table
+wraps the caption in the template's `dlm-flex-caption()`, so the lists of
+figures and tables show the short caption instead of the full one.
 ]]
 
 local function is_typst_book()
@@ -137,9 +141,30 @@ local gt_table_filter = {
   end,
 }
 
+-- Short captions for the lists of figures and tables. The short caption is
+-- parsed as markdown, matching how Quarto treats `fig-scap` for LaTeX.
+local short_caption_filter = {
+  FloatRefTarget = function(float)
+    if not quarto.doc.is_format("typst") then return nil end
+    local scap = float.attributes["fig-scap"] or float.attributes["tbl-scap"]
+    if scap == nil or scap == "" or float.caption_long == nil then return nil end
+
+    local short = pandoc.utils.blocks_to_inlines(pandoc.read(scap, "markdown").blocks)
+    local long = quarto.utils.as_inlines(float.caption_long)
+    local wrapped = pandoc.Inlines({ pandoc.RawInline("typst", "#dlm-flex-caption[") })
+    wrapped:extend(long)
+    wrapped:insert(pandoc.RawInline("typst", "]["))
+    wrapped:extend(short)
+    wrapped:insert(pandoc.RawInline("typst", "]"))
+    float.caption_long = pandoc.Plain(wrapped)
+    return float
+  end,
+}
+
 return quarto.utils.combineFilters({
   quarto.utils.file_metadata_filter(),
   header_filter,
   math_alt_filter,
   gt_table_filter,
+  short_caption_filter,
 })

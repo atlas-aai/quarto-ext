@@ -52,6 +52,22 @@
 
 #let dlm-rule(width: 54pt) = box(fill: dlm-sky, width: width, height: 4pt, radius: 2pt)
 
+// Short captions ------------------------------------------------------------
+// `fig-scap` / `tbl-scap` on a float: the list of figures/tables shows the
+// short caption, the float itself shows the full one.
+#let dlm-in-outline = state("dlm-in-outline", false)
+#let dlm-flex-caption(long, short) = context {
+  if dlm-in-outline.get() { short } else { long }
+}
+
+// Figure notes (`fig-note`): an APA-style note below the caption, left out of
+// the list of figures.
+#let dlm-fig-note(body) = context {
+  if not dlm-in-outline.get() {
+    block(above: 6pt, text(size: 0.9em, weight: 400, fill: dlm-muted)[#emph[Note]. #body])
+  }
+}
+
 // Parts ------------------------------------------------------------------------
 #let dlm-assets-state = state("dlm-assets", none)
 
@@ -329,7 +345,9 @@
 
   set text(lang: lang, region: region, size: fontsize, font: font, fill: dlm-ink, number-type: "lining")
   set par(justify: false, leading: 0.72em * linestretch, spacing: 1.15em)
-  show raw: set text(font: codefont, size: 0.88em)
+  // Typst's built-in raw rule already shrinks code to 0.8em, and an em size set
+  // here compounds with it. Dividing by 0.8 makes code 0.92 of the body size.
+  show raw: set text(font: codefont, size: 0.85em / 0.8)
   show math.equation: set text(font: mathfont)
   show link: set text(fill: dlm-blue)
   show ref: set text(fill: dlm-blue)
@@ -537,6 +555,11 @@
   show footnote.entry: set text(size: 8.5pt)
 
   // Outline styling -------------------------------------------------------------------
+  show outline: it => {
+    dlm-in-outline.update(true)
+    it
+    dlm-in-outline.update(false)
+  }
   set outline.entry(fill: box(width: 1fr, repeat(text(fill: dlm-mist.darken(25%))[.], gap: 0.25em)))
   // Entries use the body text size (fontsize)
   show outline.entry.where(level: 1): it => {
