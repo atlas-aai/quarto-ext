@@ -143,3 +143,18 @@ ggplot(penguins, aes(x = flipper_len, y = bill_len)) +
 We can include a normal reference [@measr].
 Or we can include in text, such as with @clark2016.
 We can also include an abbreviation, like for the loglinear cognitive diagnostic model [LCDM\; @henson2009].
+
+## Equations
+
+Equations can also be rendered, numbered, and references as shown in @eq-dcm.
+
+$$
+P(X_j = x_j) = \sum_{c=1}^C\nu_c \prod_{i=1}^I\pi_{ic}^{x_{ij}}(1-\pi_{ic})^{1 - x_{ij}}
+$$ {#eq-dcm}
+
+We can also render math inline.
+For example, the intercept of @eq-lcdm, $\lambda_{i,0}$, determines the probability of a correct response for a nonmaster, and the main effect $\lambda_{i,1}$ is the increase in log-odds associated with mastery.
+
+$$
+\pi_{ic} = P(X_{ic} = 1|\alpha_c) = \frac{\exp(\lambda_{i,0} + \lambda_{i,1}\alpha_c)}{1 + \exp(\lambda_{i,0} + \lambda_{i,1}\alpha_c)}
+$$ {#eq-lcdm}
