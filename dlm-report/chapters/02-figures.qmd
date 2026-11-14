@@ -149,7 +149,7 @@ Percentage of students proficient by grade (*N* = `r fmt_count(nrow(example_dat)
 
 Use the `fig-note` chunk option to add a note below a figure's caption, as shown in @fig-note.
 The note is formatted as markdown and is left out of the List of Figures.
-For a figure placed in a div, `fig-note` can be set as an attribute on the div instead, similar to `fig-scap` in @sec-sec-complex-fig (e.g., `::: {#fig-example fig-note="..."}`).
+For a figure placed in a div, `fig-note` can be set as an attribute on the div instead, similar to `fig-scap` in @sec-complex-fig (e.g., `::: {#fig-example fig-note="..."}`).
 
 ```{r}
 #| label: fig-note

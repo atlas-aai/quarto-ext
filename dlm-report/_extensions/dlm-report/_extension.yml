@@ -60,6 +60,7 @@ contributes:
       font-paths:
         - fonts/ttf
         - fonts/otf
+      fontsize: 11pt
       papersize: us-letter
       pdf-standard: [a-2a, ua-1]
       citeproc: true

@@ -70,7 +70,7 @@ gt_atlas <- function(
     ## numerics
     gt::fmt_number(
       columns = dplyr::where(\(x) {
-        is.double(x) && !all(dplyr::between(x, -1, 1))
+        is.double(x) && !all(dplyr::between(x, -1, 1), na.rm = TRUE)
       }),
       decimals = dec_dig
     ) |>
@@ -78,7 +78,7 @@ gt_atlas <- function(
     ## proportions and correlations bounded [-1, 1]
     gt::fmt_number(
       columns = dplyr::where(\(x) {
-        is.double(x) && all(dplyr::between(x, -1, 1))
+        is.double(x) && all(dplyr::between(x, -1, 1), na.rm = TRUE)
       }),
       decimals = corr_dig
     )
@@ -88,27 +88,27 @@ gt_atlas <- function(
     data <- data |>
       gt::sub_small_vals(
         columns = dplyr::where(\(x) {
-          is.double(x) && !all(dplyr::between(x, -1, 1))
+          is.double(x) && !all(dplyr::between(x, -1, 1), na.rm = TRUE)
         }),
         threshold = 1 / (10^dec_dig)
       ) |>
       gt::sub_large_vals(
         columns = dplyr::where(\(x) {
-          is.double(x) && !all(dplyr::between(x, -1, 1))
+          is.double(x) && !all(dplyr::between(x, -1, 1), na.rm = TRUE)
         }),
         threshold = 100 - (1 / (10^dec_dig)),
         large_pattern = ">{x}"
       ) |>
       gt::sub_large_vals(
         columns = dplyr::where(\(x) {
-          is.double(x) && all(dplyr::between(x, -1, 1))
+          is.double(x) && all(dplyr::between(x, -1, 1), na.rm = TRUE)
         }),
         threshold = 1 - (1 / (10^corr_dig)),
         large_pattern = ">{x}"
       ) |>
       gt::sub_large_vals(
         columns = dplyr::where(\(x) {
-          is.double(x) && all(dplyr::between(x, -1, 1))
+          is.double(x) && all(dplyr::between(x, -1, 1), na.rm = TRUE)
         }),
         threshold = 1 - (1 / (10^corr_dig)),
         large_pattern = "<\U2212{x}",
@@ -117,14 +117,22 @@ gt_atlas <- function(
   }
 
   # group formatting -----
+  # indent the first displayed column (the stub, if there is one); column 1 of
+  # the data is often the hidden `groupname_col`
   if (length(data$`_row_groups`)) {
+    boxhead <- data$`_boxhead`
+    indent_loc <- if (any(boxhead$type == "stub")) {
+      gt::cells_stub(rows = gt::everything())
+    } else {
+      gt::cells_body(
+        columns = boxhead$var[boxhead$type == "default"][1],
+        rows = gt::everything()
+      )
+    }
     data <- data |>
       gt::tab_style(
         style = gt::cell_text(indent = gt::px(20)),
-        locations = gt::cells_body(
-          columns = 1,
-          rows = gt::everything()
-        )
+        locations = indent_loc
       )
   }
 
@@ -134,7 +142,7 @@ gt_atlas <- function(
       fn = \(x) gsub("0\\.", ".", x),
       locations = gt::cells_body(
         columns = dplyr::where(\(x) {
-          is.double(x) && all(dplyr::between(x, -1, 1))
+          is.double(x) && all(dplyr::between(x, -1, 1), na.rm = TRUE)
         }),
         rows = gt::everything()
       )

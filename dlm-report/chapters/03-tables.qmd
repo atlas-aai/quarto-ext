@@ -1,90 +1,659 @@
-# Modeling {#sec-modeling blurb="How the diagnostic classification models are specified, estimated, and evaluated."}
+# Tables {#sec-tables blurb="How to create tables in the report template."}
 
 ```{r}
-#| label: setup-modeling
+#| label: setup-tables
 source("_common.R")
+
+set.seed(2015)
+student_n <- sample(10000:20000, size = 1)
+
+example_dat <- tibble(
+  id = dcmdata::generate_ids(n = student_n, character = 5),
+  grade = sample(
+    c(3:12),
+    size = student_n,
+    prob = c(1, 1, 1, 1, 1, 1, 0.1, 0.1, 1, 0.1),
+    replace = TRUE
+  ),
+  pl = factor(
+    sample(
+      c("Emerging", "Approaching the Target", "At Target", "Advanced"),
+      size = student_n,
+      prob = c(0.55, 0.22, 0.17, 0.06),
+      replace = TRUE
+    ),
+    levels = c("Emerging", "Approaching the Target", "At Target", "Advanced")
+  )
+)
+
+# Format an estimate and interval as ".78 (.77–.79)"
+fmt_ci <- function(est, lower, upper, digits = 2) {
+  f <- \(x) sub("^(-?)0\\.", "\\1.", formatC(x, format = "f", digits = digits))
+  paste0(f(est), " (", f(lower), "–", f(upper), ")")
+}
 ```
 
-The DLM assessments are scored with diagnostic classification models [DCMs\; @rupp2010]. Rather than placing students on a continuous scale, DCMs estimate the probability that a student has mastered each linkage level of each Essential Element. This chapter describes the model, the estimation procedure, and the evaluation of model fit.
+This chapter focuses on tables.
+Tables are created with the **gt** package, and the `gt_atlas()` helper defined in `_common.R` applies the house formatting: decimal alignment, one decimal place for counts and percentages, three decimal places with no leading zero for values bounded by −1 and 1 (e.g., correlations and proportions), and an indent for rows within row groups.
+Captions are placed above tables, and table numbers are added automatically from the `tbl-` label.
 
-## The Model {#sec-model}
+## Standard tables
 
-Each linkage level is calibrated with a log-linear cognitive diagnosis model [LCDM\; @henson2009] that measures a single attribute. For item $i$ and a student with mastery status $\alpha \in \{0, 1\}$, the probability of a correct response is given by @eq-lcdm.
+### Markdown tables
 
+Small tables with fixed content can be written directly in markdown, as in @tbl-markdown.
+The caption and label follow the table on a line beginning with a colon.
 
-The intercept $\lambda_{i,0}$ determines the probability of a correct response for a nonmaster, and the main effect $\lambda_{i,1}$ is the increase in log-odds associated with mastery. Models are estimated with the **measr** package [@measr].
+| First Contact complexity band | Linkage level |
+|:------------------------------|:--------------|
+| Foundational                  | Initial       |
+| Band 1                        | Initial       |
+| Band 2                        | Precursor     |
+| Band 3                        | Target        |
 
+: Correspondence of complexity bands and linkage levels {#tbl-markdown}
 
+### Tables from data
 
-## Parameter Estimates {#sec-parameters}
-
-@fig-params shows the distribution of estimated item parameters for nonmasters and masters across all linkage levels. @tbl-params summarizes the estimates by linkage level.
+Most tables are created from data with **gt**.
+@tbl-standard shows the distribution of performance levels by grade, using the default formatting from `gt_atlas()`.
 
 ```{r}
-#| label: fig-params
-#| fig-cap: "Estimated probability of a correct response for masters and nonmasters (simulated)"
-#| fig-alt: "Density plot of the probability of a correct response. Nonmasters cluster near 0.3 and masters cluster near 0.85."
-set.seed(3)
-params <- data.frame(
-  group = rep(c("Nonmasters", "Masters"), each = 800),
-  p = c(rbeta(800, 3, 7), rbeta(800, 12, 2.2))
-)
-ggplot(params, aes(x = p, fill = group)) +
-  geom_density(alpha = 0.85, colour = NA) +
-  scale_fill_discrete(breaks = c("Nonmasters", "Masters")) +
-  scale_x_continuous(limits = c(0, 1), labels = scales::percent) +
-  labs(x = "Probability of a correct response", y = "Density", fill = NULL)
+#| label: tbl-standard
+#| tbl-cap: Percentage of students achieving at each performance level by grade
+
+example_dat |>
+  count(grade, pl) |>
+  mutate(n_grade = sum(n), pct = n / n_grade * 100, .by = grade) |>
+  select(-n) |>
+  pivot_wider(names_from = pl, values_from = pct) |>
+  mutate(
+    grade = as.character(grade),
+    n_grade = as.integer(n_grade),
+    `At Target + Advanced` = `At Target` + Advanced
+  ) |>
+  gt() |>
+  gt_atlas() |>
+  cols_label(
+    grade = "Grade",
+    n_grade = md("*n*"),
+    Emerging = "Emerging (%)",
+    `Approaching the Target` = "Approaching (%)",
+    `At Target` = "At Target (%)",
+    Advanced = "Advanced (%)",
+    `At Target + Advanced` = "At Target + Advanced (%)"
+  )
 ```
 
+## Text-heavy tables
+
+Tables can also contain longer text.
+Column widths can be set with `cols_width()` so that text wraps within cells, as in @tbl-text.
+@tbl-text also includes a footnote attached to a single cell, created with `tab_footnote()`.
+Use `opt_footnote_marks(marks = "standard")` to use symbols (\*, †, ‡) rather than numbers, which could be confused with values in the table.
+
 ```{r}
-#| label: tbl-params
-#| tbl-cap: "Summary of item parameter estimates by linkage level (simulated)"
-levels <- c(
-  "Initial Precursor",
-  "Distal Precursor",
-  "Proximal Precursor",
-  "Target",
-  "Successor"
-)
-tab <- data.frame(
-  `Linkage level` = levels,
-  `Items` = sample(300:900, 5),
-  `Nonmaster mean` = sort(runif(5, .18, .35)),
-  `Nonmaster SD` = runif(5, .08, .14),
-  `Master mean` = sort(runif(5, .78, .9), decreasing = TRUE),
-  `Master SD` = runif(5, .06, .12),
-  check.names = FALSE
-)
-gt(tab) |>
-  fmt_integer(Items) |>
-  fmt_number(-c(`Linkage level`, Items), decimals = 2)
+#| label: tbl-text
+#| tbl-cap: Variables included in the propensity score models
+
+tribble(
+  ~predictor                            , ~description                                                                                                                              ,
+  "Gender"                              , "Student's reported gender"                                                                                                               ,
+  "Race"                                , "Student's reported race"                                                                                                                 ,
+  "Hispanic ethnicity"                  , "Student's recognition of their Hispanic ethnicity"                                                                                       ,
+  "Primary disability"                  , "Student's reported disability category"                                                                                                  ,
+  "English learning (EL) participation" , "Student's eligibility or participation in EL services"                                                                                   ,
+  "Computer use"                        , "Student's primary use of a computer during instruction"                                                                                  ,
+  "Educational placement"               , "Student's educational placement (e.g., regular class, resource room, separate class)"                                                    ,
+  "Primary language"                    , "Is English the student's primary language (Yes or No)"                                                                                   ,
+  "Subject-specific complexity band"    , "Student's subject complexity band, based on domain-specific questions on the First Contact survey (i.e., ELA, mathematics, and science)" ,
+  "Writing complexity band"             , "Student's writing complexity band, based on responses to the First Contact survey"                                                       ,
+  "Expressive communication band"       , "Student's expressive communication band, based on responses to the First Contact survey"                                                 ,
+  "Receptive communication score"       , "Student's sum score of receptive communication items on the First Contact survey"
+) |>
+  gt() |>
+  gt_atlas() |>
+  cols_label(predictor = "Predictor", description = "Description") |>
+  cols_width(predictor ~ pct(35), description ~ pct(65)) |>
+  cols_align("left", columns = everything()) |>
+  tab_footnote(
+    footnote = "Only included for English language arts models.",
+    locations = cells_body(
+      columns = predictor,
+      rows = predictor == "Writing complexity band"
+    )
+  ) |>
+  opt_footnote_marks(marks = "standard")
 ```
 
-## Model Fit {#sec-model-fit}
-
-Absolute fit is evaluated with posterior predictive model checks [@park2015]. Relative fit compares the fungible and nonfungible models using leave-one-out cross-validation. @tbl-fit lists the fit flags for each Essential Element. The table is long by design so the PDF demonstrates a table breaking across pages with a repeated header.
+Text-heavy tables can also combine wrapped text with spanning headers and empty cells.
+@tbl-validity summarizes the sources of validity evidence for each claim, with empty cells shown as blanks using `sub_missing(missing_text = "")`.
 
 ```{r}
-#| label: tbl-fit
+#| label: tbl-validity
+#| tbl-cap: DLM Alternate Assessment System claims and sources of updated evidence
+
+tribble(
+  ~claim                                                                                   , ~content   , ~process        , ~internal , ~relations      , ~consequences ,
+  "1. Mastery results represent what students know and can do."                            ,
+  "3.1, 3.2, 3.3, 3.4, 4.1, 4.3, 4.4, 4.5, 7.1, 7.2"                                       , "4.1, 4.2" ,
+  "3.3, 3.4, 3.6, 5.1, 8.1"                                                                , "7.3"      , "3.5, 7.1, 7.2" ,
+  "2. Results indicate summative performance relative to alternate achievement standards." ,
+  "7.1, 7.2"                                                                               , NA         , "8.1"           , NA        , "3.5, 7.1, 7.2" ,
+  "3. Results can be used for instructional decision-making."                              ,
+  NA                                                                                       , NA         , NA              , NA        , "3.5"
+) |>
+  gt() |>
+  gt_atlas() |>
+  sub_missing(missing_text = "") |>
+  cols_label(
+    claim = "Claim",
+    content = "Test content",
+    process = "Response processes",
+    internal = "Internal structure",
+    relations = "Relations with other variables",
+    consequences = "Consequences of testing"
+  ) |>
+  tab_spanner(label = "Sources of evidence", columns = -claim) |>
+  cols_width(claim ~ pct(30)) |>
+  cols_align("left", columns = everything()) |>
+  tab_options(table.font.size = pct(85)) |>
+  tab_source_note(md(
+    "*Note*. Only direct sources of evidence are listed. Some propositions are also supported indirectly by evidence presented for other propositions."
+  ))
+```
+
+## Grouped tables
+
+### Row groups
+
+Rows can be organized into groups with the `groupname_col` argument of `gt()` (or with `tab_row_group()`).
+When a table has row groups, `gt_atlas()` indents the rows within each group, as shown in @tbl-row-groups.
+
+```{r}
+#| label: tbl-row-groups
+#| tbl-cap: Demographic characteristics of students
+
+demographics <- tribble(
+  ~variable                             , ~group                                , ~n    ,
+  "Gender"                              , "Male"                                ,  9312 ,
+  "Gender"                              , "Female"                              ,  4726 ,
+  "Gender"                              , "Nonbinary/undesignated"              ,     0 ,
+  "Race"                                , "White"                               ,  9915 ,
+  "Race"                                , "African American"                    ,  2496 ,
+  "Race"                                , "Two or more races"                   ,   785 ,
+  "Race"                                , "Asian"                               ,   440 ,
+  "Race"                                , "American Indian"                     ,   262 ,
+  "Race"                                , "Native Hawaiian or Pacific Islander" ,   129 ,
+  "Race"                                , "Alaska Native"                       ,    11 ,
+  "Hispanic ethnicity"                  , "Non-Hispanic"                        , 12325 ,
+  "Hispanic ethnicity"                  , "Hispanic"                            ,  1713 ,
+  "English learning (EL) participation" , "Not EL eligible or monitored"        , 12977 ,
+  "English learning (EL) participation" , "EL eligible or monitored"            ,  1061
+) |>
+  mutate(n = as.integer(n), pct = n / sum(n) * 100, .by = variable)
+
+demographics |>
+  gt(groupname_col = "variable") |>
+  gt_atlas() |>
+  cols_label(group = "Group", n = md("*n*"), pct = "%")
+```
+
+### Spanning column headers
+
+Related columns can be placed under a shared header with `tab_spanner()`.
+@tbl-spanners uses spanners to group the count and percentage for each performance level, in addition to row groups.
+Wide tables like this one may need a smaller font (see @tbl-validity) or a landscape page in the PDF.
+
+To place a table on a landscape page, wrap the chunk in a `.landscape` div.
+In the PDF, the div starts a new landscape page and the text after it continues on a new portrait page.
+The website ignores the div.
+
+````markdown
+::: {.landscape}
+
+`r ''````{r}
+#| label: tbl-spanners
+#| tbl-cap: Science performance level distributions by demographic subgroup
+
+subgroup_pl |>
+  gt(groupname_col = "variable") |>
+  ...
+```
+
+:::
+````
+
+::: {.landscape}
+
+```{r}
+#| label: tbl-spanners
+#| tbl-cap: Science performance level distributions by demographic subgroup
+
+subgroup_pl <- tribble(
+  ~variable                             , ~group                                , ~emerging , ~approaching , ~target , ~advanced ,
+  "Gender"                              , "Male"                                ,     17355 ,         6381 ,    4727 ,      1186 ,
+  "Gender"                              , "Female"                              ,      8619 ,         3111 ,    2165 ,       461 ,
+  "Gender"                              , "Nonbinary/undesignated"              ,        16 ,           10 ,       5 ,         0 ,
+  "Race"                                , "White"                               ,     14235 ,         5352 ,    3904 ,       997 ,
+  "Race"                                , "African American"                    ,      5296 ,         1946 ,    1476 ,       324 ,
+  "Race"                                , "Two or more races"                   ,      4029 ,         1506 ,    1057 ,       209 ,
+  "Race"                                , "Asian"                               ,      1749 ,          432 ,     249 ,        50 ,
+  "Race"                                , "American Indian"                     ,       453 ,          186 ,     160 ,        50 ,
+  "Race"                                , "Native Hawaiian or Pacific Islander" ,       191 ,           62 ,      45 ,        15 ,
+  "Race"                                , "Alaska Native"                       ,        37 ,           18 ,       6 ,         2 ,
+  "Hispanic ethnicity"                  , "Non-Hispanic"                        ,     20164 ,         7320 ,    5278 ,      1297 ,
+  "Hispanic ethnicity"                  , "Hispanic"                            ,      5826 ,         2182 ,    1619 ,       350 ,
+  "English learning (EL) participation" , "Not EL eligible or monitored"        ,     24151 ,         8824 ,    6389 ,      1534 ,
+  "English learning (EL) participation" , "EL eligible or monitored"            ,      1839 ,          678 ,     508 ,       113
+) |>
+  mutate(proficient = target + advanced) |>
+  pivot_longer(emerging:proficient, names_to = "level", values_to = "n") |>
+  mutate(
+    total = sum(n[level != "proficient"]),
+    pct = n / total * 100,
+    n = as.integer(n),
+    .by = c(variable, group)
+  ) |>
+  select(-total) |>
+  pivot_wider(
+    names_from = level,
+    values_from = c(n, pct),
+    names_glue = "{level}_{.value}"
+  ) |>
+  select(
+    variable,
+    group,
+    starts_with("emerging"),
+    starts_with("approaching"),
+    starts_with("target"),
+    starts_with("advanced"),
+    starts_with("proficient")
+  )
+
+subgroup_pl |>
+  gt(groupname_col = "variable") |>
+  gt_atlas() |>
+  tab_spanner(label = "Emerging", columns = starts_with("emerging")) |>
+  tab_spanner(label = "Approaching", columns = starts_with("approaching")) |>
+  tab_spanner(label = "At Target", columns = starts_with("target")) |>
+  tab_spanner(label = "Advanced", columns = starts_with("advanced")) |>
+  tab_spanner(
+    label = "At Target + Advanced",
+    columns = starts_with("proficient")
+  ) |>
+  cols_label(
+    group = "Subgroup",
+    ends_with("_n") ~ md("*n*"),
+    ends_with("_pct") ~ "%"
+  ) |>
+  cols_width(group ~ pct(30)) |>
+  tab_style(
+    style = cell_borders(
+      sides = "left",
+      color = dlm_colors[["navy"]],
+      weight = px(1)
+    ),
+    locations = cells_body(columns = proficient_n)
+  ) |>
+  tab_options(table.font.size = pct(95))
+```
+
+:::
+
+@tbl-survey shows a common layout for survey results, with spanners for each response option, wrapped text in the first column, and a note defining the abbreviations used in the column headers.
+
+```{r}
+#| label: tbl-survey
+#| tbl-cap: Test administrator responses regarding test administration
+
+tribble(
+  ~statement                                                                                           , ~sd , ~d  , ~a   , ~sa  ,
+  "I was confident in my ability to deliver DLM testlets."                                             ,  93 , 156 , 3113 , 4182 ,
+  "Required Test Administrator Training prepared me for the responsibilities of a test administrator." , 149 , 380 , 3561 , 3436 ,
+  "I have access to curriculum aligned with the content measured by DLM assessments."                  , 227 , 651 , 3648 , 3003 ,
+  "I used manuals and/or the DLM Educator Resource Page materials."                                    , 148 , 507 , 3821 , 3069
+) |>
+  mutate(asa = a + sa) |>
+  pivot_longer(-statement, names_to = "resp", values_to = "n") |>
+  mutate(
+    pct = n / sum(n[resp != "asa"]) * 100,
+    n = as.integer(n),
+    .by = statement
+  ) |>
+  pivot_wider(
+    names_from = resp,
+    values_from = c(n, pct),
+    names_glue = "{resp}_{.value}"
+  ) |>
+  select(
+    statement,
+    starts_with("sd"),
+    starts_with("d_"),
+    starts_with("a_"),
+    starts_with("sa"),
+    starts_with("asa")
+  ) |>
+  gt() |>
+  gt_atlas() |>
+  tab_spanner(label = "SD", columns = starts_with("sd")) |>
+  tab_spanner(label = "D", columns = starts_with("d_")) |>
+  tab_spanner(label = "A", columns = starts_with("a_")) |>
+  tab_spanner(label = "SA", columns = starts_with("sa")) |>
+  tab_spanner(label = "A+SA", columns = starts_with("asa")) |>
+  cols_label(
+    statement = "Statement",
+    ends_with("_n") ~ md("*n*"),
+    ends_with("_pct") ~ "%"
+  ) |>
+  cols_width(statement ~ pct(25)) |>
+  cols_align("left", columns = statement) |>
+  tab_options(table.font.size = pct(85)) |>
+  tab_source_note(md(
+    "*Note*. SD = strongly disagree; D = disagree; A = agree; SA = strongly agree; A+SA = agree and strongly agree."
+  ))
+```
+
+## Table notes and footnotes
+
+Following APA style, general notes about a table are placed below the table, beginning with *Note*.
+These are created with `tab_source_note()`.
+Notes that apply to specific cells use `tab_footnote()`, which adds a mark to the cell and the matching footnote below the table.
+
+### Missing values and specific notes
+
+@tbl-footnotes includes both kinds of notes.
+Missing values are shown with an em dash using `sub_missing()`, and footnotes explain why particular cells are empty.
+
+```{r}
+#| label: tbl-footnotes
+#| tbl-cap: Area under the ROC curve, by assessment model, grade, and subject
+
+auc <- tribble(
+  ~model                     , ~grade    , ~ela , ~math , ~sci ,
+  "Instructionally Embedded" , "3"       , .535 , .542  , NA   ,
+  "Instructionally Embedded" , "4"       , .578 , .562  , NA   ,
+  "Instructionally Embedded" , "5"       , .539 , .575  , NA   ,
+  "Instructionally Embedded" , "6"       , .567 , .590  , NA   ,
+  "Instructionally Embedded" , "7"       , .568 , .551  , NA   ,
+  "Instructionally Embedded" , "8"       , .589 , .554  , NA   ,
+  "Instructionally Embedded" , "9"       , .617 , .611  , NA   ,
+  "Instructionally Embedded" , "10"      , NA   , .598  , NA   ,
+  "Instructionally Embedded" , "11"      , .566 , .541  , NA   ,
+  "Year-End"                 , "3"       , .529 , .520  , .778 ,
+  "Year-End"                 , "4"       , .515 , .517  , .570 ,
+  "Year-End"                 , "5"       , .526 , .529  , .534 ,
+  "Year-End"                 , "6"       , .516 , .539  , .719 ,
+  "Year-End"                 , "7"       , .526 , .526  , .634 ,
+  "Year-End"                 , "8"       , .534 , .525  , .524 ,
+  "Year-End"                 , "9"       , .693 , .668  , .530 ,
+  "Year-End"                 , "10"      , .840 , .867  , NA   ,
+  "Year-End"                 , "11"      , .516 , .536  , NA   ,
+  "Year-End"                 , "Biology" , NA   , NA    , .449
+)
+
+auc |>
+  gt(groupname_col = "model") |>
+  gt_atlas() |>
+  sub_missing(missing_text = "—") |>
+  cols_label(
+    grade = "Grade or course",
+    ela = "English language arts",
+    math = "Mathematics",
+    sci = "Science"
+  ) |>
+  tab_footnote(
+    footnote = "Instructionally embedded ELA assessments are grade banded for grades 9–10 and 11–12.",
+    locations = cells_body(
+      columns = ela,
+      rows = model == "Instructionally Embedded" & grade == "10"
+    )
+  ) |>
+  tab_footnote(
+    footnote = "All science assessments follow a year-end assessment model.",
+    locations = cells_body(
+      columns = sci,
+      rows = model == "Instructionally Embedded"
+    )
+  ) |>
+  tab_footnote(
+    footnote = "Science is assessed in grade band 9–12 and Biology.",
+    locations = cells_body(
+      columns = sci,
+      rows = model == "Year-End" & grade %in% c("10", "11")
+    )
+  ) |>
+  cols_width(grade ~ pct(25)) |>
+  opt_footnote_marks(marks = "standard")
+```
+
+### Estimates with intervals
+
+Estimates are often reported with an interval in parentheses, as in @tbl-intervals.
+Because these cells contain text rather than numbers, they are formatted before building the table (here with a small `fmt_ci()` helper defined in the setup chunk).
+Multiline column headers can be created with `md()` and `<br>`.
+
+```{r}
+#| label: tbl-intervals
+#| tbl-cap: Average linkage level reliability, by demographic category
+
+tribble(
+  ~variable                             , ~group                                , ~tet , ~tet_lb , ~tet_ub , ~agr , ~agr_lb , ~agr_ub , ~kap , ~kap_lb , ~kap_ub ,
+  "Gender"                              , "Female"                              , .78  , .77     , .79     , .84  , .83     , .85     , .61  , .59     , .62     ,
+  "Gender"                              , "Male"                                , .76  , .75     , .77     , .83  , .82     , .83     , .58  , .57     , .59     ,
+  "Race"                                , "African American"                    , .77  , .76     , .78     , .83  , .82     , .84     , .58  , .56     , .59     ,
+  "Race"                                , "Alaska Native"                       , .82  , .76     , .89     , .86  , .83     , .91     , .67  , .57     , .83     ,
+  "Race"                                , "American Indian"                     , .83  , .77     , .90     , .86  , .83     , .91     , .69  , .58     , .85     ,
+  "Race"                                , "Asian"                               , .86  , .81     , .90     , .88  , .84     , .91     , .78  , .69     , .85     ,
+  "Race"                                , "Native Hawaiian or Pacific Islander" , .82  , .75     , .89     , .86  , .82     , .91     , .67  , .56     , .85     ,
+  "Race"                                , "Two or more races"                   , .86  , .84     , .88     , .88  , .86     , .89     , .73  , .69     , .77     ,
+  "Race"                                , "White"                               , .76  , .75     , .76     , .83  , .82     , .83     , .57  , .56     , .58     ,
+  "Hispanic ethnicity"                  , "Hispanic"                            , .86  , .85     , .88     , .88  , .87     , .89     , .73  , .70     , .75     ,
+  "Hispanic ethnicity"                  , "Non-Hispanic"                        , .76  , .75     , .76     , .83  , .82     , .83     , .57  , .56     , .58     ,
+  "English learning (EL) participation" , "EL eligible or monitored"            , .84  , .82     , .87     , .87  , .85     , .89     , .71  , .67     , .75     ,
+  "English learning (EL) participation" , "Not EL eligible or monitored"        , .76  , .76     , .77     , .83  , .82     , .83     , .58  , .57     , .59
+) |>
+  mutate(
+    tet = fmt_ci(tet, tet_lb, tet_ub),
+    agr = fmt_ci(agr, agr_lb, agr_ub),
+    kap = fmt_ci(kap, kap_lb, kap_ub),
+    .keep = "unused"
+  ) |>
+  gt(groupname_col = "variable") |>
+  gt_atlas() |>
+  cols_label(
+    group = "Group",
+    tet = md("Tetrachoric correlation<br>(95% CI)"),
+    agr = md("Classification agreement rate<br>(95% CI)"),
+    kap = md("Cohen's kappa<br>(95% CI)")
+  ) |>
+  cols_align("center", columns = -group) |>
+  tab_source_note(md(
+    "*Note*. CI = credible interval from the multilevel regression model after completing poststratification."
+  ))
+```
+
+### Signed values
+
+Tables of differences or changes include negative values.
+**gt** formats these with a true minus sign (−) rather than a hyphen.
+In @tbl-signed, extreme-value formatting is turned off with `gt_atlas(fmt_extreme = FALSE)` so that small changes are shown as numbers rather than as "<0.1".
+
+```{r}
+#| label: tbl-signed
+#| tbl-cap: Science performance level changes, by grade or course, 2017–2018 to 2018–2019
+
+tribble(
+  ~level                   , ~`3`  , ~`4` , ~`5` , ~`6` , ~`7`  , ~`8` , ~`9–12` , ~Biology ,
+  "Emerging"               , -22.3 , -0.9 ,  2.4 , -7.0 , -12.4 ,  1.5 ,  0.7    , -1.1     ,
+  "Approaching the Target" ,  15.8 , -0.1 , -1.7 , -2.2 ,  -1.6 , -0.1 ,  0.7    , -0.7     ,
+  "At Target"              ,  -1.3 ,  0.2 , -0.8 ,  6.3 ,   9.5 , -1.6 , -1.1    , -0.9     ,
+  "Advanced"               ,   7.9 ,  0.8 ,  0.0 ,  2.8 ,   4.5 ,  0.1 , -0.4    ,  2.7     ,
+  "At Target/Advanced"     ,   6.5 ,  1.0 , -0.7 ,  9.2 ,  14.0 , -1.4 , -1.4    ,  1.8
+) |>
+  gt() |>
+  gt_atlas(fmt_extreme = FALSE) |>
+  fmt_number(-level, decimals = 1) |>
+  cols_label(level = "Performance level") |>
+  tab_spanner(label = "Grade or course", columns = -level)
+```
+
+::: {.landscape}
+
+### Proportions and many columns
+
+@tbl-index-range has many narrow columns under a single spanner.
+Proportions are formatted with three decimals and no leading zero, and the note gives the number of linkage levels summarized.
+
+```{r}
+#| label: tbl-index-range
+#| tbl-cap: |
+#|   Reliability summaries across all linkage levels: Proportion of linkage
+#|   levels falling within a specified index range
+
+tribble(
+  ~index                          , ~r1  , ~r2  , ~r3  , ~r4  , ~r5  , ~r6  , ~r7  , ~r8  , ~r9  ,
+  "Tetrachoric correlation"       , .078 , .059 , .098 , .108 , .196 , .216 , .118 , .088 , .039 ,
+  "Classification agreement rate" , .000 , .000 , .010 , .039 , .137 , .304 , .255 , .196 , .059 ,
+  "Classification consistency"    , .010 , .059 , .098 , .157 , .186 , .167 , .157 , .088 , .078 ,
+  "Cohen's kappa"                 , .745 , .108 , .049 , .020 , .069 , .010 , .000 , .000 , .000
+) |>
+  gt() |>
+  gt_atlas() |>
+  cols_label(
+    index = "Reliability index",
+    r1 = "0.00–0.59",
+    r2 = "0.60–0.64",
+    r3 = "0.65–0.69",
+    r4 = "0.70–0.74",
+    r5 = "0.75–0.79",
+    r6 = "0.80–0.84",
+    r7 = "0.85–0.89",
+    r8 = "0.90–0.94",
+    r9 = "0.95–1.00"
+  ) |>
+  tab_spanner(label = "Index range", columns = -index) |>
+  # tab_options(table.font.size = pct(90)) |>
+  tab_source_note(md("*Note*. Total linkage levels = 102."))
+```
+
+:::
+
+## Long tables
+
+By default, a table is kept on a single page in the PDF.
+Long tables can be allowed to break across pages by adding `#| classes: breakable` to the chunk options.
+The header row is repeated on each page, as shown in @tbl-long.
+On each page after the first, the caption is also repeated above the header, followed by "(continued)".
+
+```{r}
+#| label: tbl-long
 #| classes: breakable
-#| tbl-cap: "Model fit flags by Essential Element and linkage level (simulated)"
-ee <- sprintf(
-  "M.EE.%d.%s.%d",
-  rep(3:8, each = 6),
-  rep(c("NS", "OA", "G", "MD", "SP", "EE"), 6),
-  rep(1:2, 18)
-)
-fit <- data.frame(
-  `Essential Element` = ee,
-  `IP` = sample(c("✓", "✓", "✓", "Flag"), length(ee), TRUE),
-  `DP` = sample(c("✓", "✓", "✓", "Flag"), length(ee), TRUE),
-  `PP` = sample(c("✓", "✓", "✓", "✓", "Flag"), length(ee), TRUE),
-  `T` = sample(c("✓", "✓", "✓", "✓", "Flag"), length(ee), TRUE),
-  `S` = sample(c("✓", "✓", "✓", "Flag"), length(ee), TRUE),
-  `ppp` = runif(length(ee), .05, .95),
-  check.names = FALSE
-)
-gt(fit) |>
-  fmt_number(ppp, decimals = 3) |>
-  cols_align("center", columns = IP:S)
+#| tbl-cap: Summary of Essential Element reliability evidence
+
+set.seed(1213)
+ee_rel <- expand_grid(
+  grade = c(3:12),
+  domain = c("ESS", "LS", "PS"),
+  num = 1:2
+) |>
+  mutate(
+    ee = paste0(
+      "SCI.EE.",
+      grade,
+      ".",
+      domain,
+      num,
+      "-",
+      sample(1:4, n(), TRUE)
+    ),
+    cor = runif(n(), .60, .95),
+    agr = runif(n(), .93, .995),
+    kap = runif(n(), .82, .99)
+  ) |>
+  select(grade, ee, cor, agr, kap) |>
+  mutate(grade = as.character(grade))
+
+ee_rel |>
+  gt() |>
+  gt_atlas() |>
+  cols_label(
+    grade = "Grade",
+    ee = "Essential Element",
+    cor = "Linkage levels mastered correlation",
+    agr = "Average student classification agreement",
+    kap = "Average student Cohen's kappa"
+  )
 ```
+
+## Complex table captions {#sec-complex-tbl}
+
+As with figures (@sec-complex-fig), captions that require markdown formatting or inline code can be written by placing the table within a div.
+The `tbl-scap` attribute provides a shorter caption for the List of Tables at the beginning of the PDF document.
+The full caption is included after the R chunk that generates the table.
+
+````markdown
+::: {#tbl-complex tbl-scap="Representation of demographic categories within retained student groups"}
+
+`r ''````{r}
+rep_tab |>
+  gt(groupname_col = "variable") |>
+  gt_atlas() |>
+  ...
+```
+
+Representation of demographic categories within student group and linkage level combinations that met sample size for linkage level reliability (*N* = `r knitr::inline_expr("fmt_count(sum(rep_tab$comb_n[rep_tab$variable == 'Gender']))")`)
+
+:::
+````
+
+```{r}
+#| label: complex-tbl-data
+rep_tab <- tribble(
+  ~variable                             , ~group                                , ~comb_n , ~ll_n ,
+  "Gender"                              , "Female"                              ,    1477 ,   855 ,
+  "Gender"                              , "Male"                                ,    2244 ,   995 ,
+  "Race"                                , "African American"                    ,    1136 ,   685 ,
+  "Race"                                , "Alaska Native"                       ,       0 ,     0 ,
+  "Race"                                , "American Indian"                     ,       0 ,     0 ,
+  "Race"                                , "Asian"                               ,      38 ,    38 ,
+  "Race"                                , "Native Hawaiian or Pacific Islander" ,       0 ,     0 ,
+  "Race"                                , "Two or more races"                   ,     174 ,   151 ,
+  "Race"                                , "White"                               ,    2373 ,   996 ,
+  "Hispanic ethnicity"                  , "Hispanic"                            ,     523 ,   260 ,
+  "Hispanic ethnicity"                  , "Non-Hispanic"                        ,    3198 ,   996 ,
+  "English learning (EL) participation" , "EL eligible or monitored"            ,     188 ,   127 ,
+  "English learning (EL) participation" , "Not EL eligible or monitored"        ,    3533 ,   996
+) |>
+  mutate(
+    comb_pct = comb_n / 3721 * 100,
+    ll_pct = ll_n / 1275 * 100,
+    across(ends_with("_n"), as.integer)
+  ) |>
+  select(variable, group, comb_n, comb_pct, ll_n, ll_pct)
+```
+
+::: {#tbl-complex tbl-scap="Representation of demographic categories within retained student groups"}
+
+```{r}
+rep_tab |>
+  gt(groupname_col = "variable") |>
+  gt_atlas() |>
+  tab_spanner(
+    label = md(paste0("Combinations (*N* = ", fmt_count(3721), ")")),
+    columns = starts_with("comb")
+  ) |>
+  tab_spanner(
+    label = md(paste0("Linkage levels (*N* = ", fmt_count(1275), ")")),
+    columns = starts_with("ll")
+  ) |>
+  cols_label(
+    group = "Group",
+    ends_with("_n") ~ md("*n*"),
+    ends_with("_pct") ~ "%"
+  )
+```
+
+Representation of demographic categories within student group and linkage level combinations that met sample size for linkage level reliability (*N* = `r fmt_count(sum(rep_tab$comb_n[rep_tab$variable == "Gender"]))`)
+
+:::

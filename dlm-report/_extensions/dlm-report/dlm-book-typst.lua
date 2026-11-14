@@ -95,15 +95,37 @@ local gt_default_values = {
   ["font-style"] = { "normal" },
 }
 
+-- Vertical rules: a left or right border from tab_style(cell_borders()) is
+-- kept, while gt's own borders (gray or white, or style none) are dropped.
+-- Horizontal rules always come from the template.
+local gt_default_border_colors = { ["#d3d3d3"] = true, ["#a8a8a8"] = true, ["#ffffff"] = true }
+
+local function author_border_sides(style)
+  local sides = {}
+  for _, side in ipairs({ "left", "right" }) do
+    local s = style:match("border%-" .. side .. "%-style%s*:%s*([^;]+)")
+    local c = style:match("border%-" .. side .. "%-color%s*:%s*([^;]+)")
+    s = s and s:lower():gsub("%s+$", "")
+    c = c and c:lower():gsub("%s+$", "")
+    if s and s ~= "none" and s ~= "hidden" and c and not gt_default_border_colors[c] then
+      sides[side] = true
+    end
+  end
+  return sides
+end
+
 local function clean_gt_css(style)
   local kept = {}
+  local sides = author_border_sides(style)
   for decl in style:gmatch("[^;]+") do
     local prop, value = decl:match("^%s*([%w%-]+)%s*:%s*(.-)%s*$")
     if prop then
       prop = prop:lower()
+      local side = prop:match("^border%-(%a+)%-")
       local drop = gt_drop_props[prop]
         or prop:match("^%-") or prop:match("^margin") or prop:match("^padding")
-        or prop:match("^border") or prop:match("^overflow")
+        or (prop:match("^border") and not (side and sides[side]))
+        or prop:match("^overflow")
       for _, v in ipairs(gt_default_values[prop] or {}) do
         if value:lower() == v then drop = true end
       end
@@ -121,22 +143,165 @@ local function clean_gt_attrs(attrs)
   end
 end
 
+-- Quarto does not carry CSS `text-indent` into Typst, so an indent from
+-- tab_style(cell_text(indent = ...)) (e.g., rows within row groups in
+-- gt_atlas()) is lost. Pad the cell's contents instead, which also indents
+-- wrapped lines.
+local function indent_cell(cell)
+  local style = cell.attributes["style"]
+  if not style then return end
+  local value, unit = style:match("text%-indent%s*:%s*([%d%.]+)%s*(%a+)")
+  if not value then return end
+  local pt = tonumber(value)
+  if unit == "px" then pt = pt * 0.75
+  elseif unit == "em" then pt = nil
+  elseif unit ~= "pt" then return end
+  local amount = pt and string.format("%.2fpt", pt) or (value .. "em")
+  local contents = pandoc.Blocks({ pandoc.RawBlock("typst", "#pad(left: " .. amount .. ")[") })
+  contents:extend(cell.contents)
+  contents:insert(pandoc.RawBlock("typst", "]"))
+  cell.contents = contents
+end
+
+-- Spanner labels from tab_spanner() arrive as a `gt_column_spanner` div in a
+-- header cell. Set them with the template's dlm-spanner(), which rules the
+-- label across only its columns (gt draws this rule with CSS borders, which
+-- are dropped above).
+local spanner_filter = {
+  Div = function(div)
+    if not div.classes:includes("gt_column_spanner") then return nil end
+    local blocks = pandoc.Blocks({ pandoc.RawBlock("typst", "#dlm-spanner[") })
+    blocks:extend(div.content)
+    blocks:insert(pandoc.RawBlock("typst", "]"))
+    return blocks
+  end,
+}
+
+-- Line breaks: in a Quarto render, gt passes md() text (e.g., a column label
+-- of md("Correlation<br>(95% CI)")) to Quarto as markdown, so `<br>` becomes
+-- raw HTML, which Typst output drops. Make it a real line break.
+local html_break_filter = {
+  RawInline = function(el)
+    if el.format:match("^html") and el.text:match("^%s*<[bB][rR]%s*/?>%s*$") then
+      return pandoc.LineBreak()
+    end
+    return nil
+  end,
+}
+
+-- Zebra striping counts body rows only, so it starts at the first body row
+-- however many header rows a table has (the website's `tbody
+-- tr:nth-child(even)` does the same): the 2nd, 4th, ... body rows are shaded.
+-- The template's fill (by row number) only covers tables this filter never
+-- sees. A fill from tab_style(cell_fill()) is kept.
+local function stripe_body(el)
+  local n = 0
+  for _, body in ipairs(el.bodies) do
+    for _, list in ipairs({ body.head, body.body }) do
+      for _, row in ipairs(list) do
+        n = n + 1
+        local fill = (n % 2 == 0) and "dlm-tint" or "none"
+        for _, cell in ipairs(row.cells) do
+          local style = cell.attributes["style"] or ""
+          if not cell.attributes["typst:fill"] and not style:match("background%-color") then
+            cell.attributes["typst:fill"] = fill
+          end
+        end
+      end
+    end
+  end
+end
+
 local gt_table_filter = {
   Table = function(el)
-    if not quarto.doc.is_format("typst") or not el.classes:includes("gt_table") then return nil end
+    if not quarto.doc.is_format("typst") then return nil end
+    if not el.classes:includes("gt_table") then
+      stripe_body(el)
+      return el
+    end
+    el = el:walk(html_break_filter)
     clean_gt_attrs(el.attributes)
-    local function rows(list)
+    -- Pandoc's HTML reader gives some gt tables (e.g., with spanners or
+    -- footnotes) equal fixed column widths, which squeezes label columns.
+    -- Equal widths that gt did not set (cols_width()) go back to auto widths.
+    local widths, equal = {}, true
+    for i, spec in ipairs(el.colspecs) do
+      widths[i] = spec[2]
+      if type(widths[i]) ~= "number" or math.abs(widths[i] - widths[1]) > 1e-6 then equal = false end
+    end
+    if equal and #widths > 1 then
+      for i, spec in ipairs(el.colspecs) do el.colspecs[i] = { spec[1], nil } end
+    end
+    local halign = {
+      AlignLeft = "left", AlignCenter = "center", AlignRight = "right",
+    }
+    -- Body cells are centered vertically, as gt does on the website, so values
+    -- line up with the middle of a label that wraps onto several lines. A
+    -- cell_text(v_align = ...) from tab_style() still wins. Typst takes
+    -- horizontal and vertical alignment together, so the cell's horizontal
+    -- alignment moves into a `typst:align` attribute (also used for headers).
+    local valign = { top = "top", middle = "horizon", bottom = "bottom" }
+    -- (read before clean_gt_attrs(), which drops `vertical-align`, and set
+    -- after it, since it also drops `typst:` attributes)
+    local function cell_valign(cell, default)
+      local v = (cell.attributes["style"] or ""):match("vertical%-align%s*:%s*(%a+)")
+      return (v and valign[v:lower()]) or default
+    end
+    local function set_valign(cell, v)
+      local h = halign[tostring(cell.alignment)]
+      cell.attributes["typst:align"] = h and (h .. " + " .. v) or v
+      if h then cell.alignment = pandoc.AlignDefault end
+    end
+    local function rows(list, vdefault)
       for _, row in ipairs(list) do
         clean_gt_attrs(row.attributes)
-        for _, cell in ipairs(row.cells) do clean_gt_attrs(cell.attributes) end
+        for _, cell in ipairs(row.cells) do
+          indent_cell(cell)
+          local v = vdefault and cell_valign(cell, vdefault)
+          clean_gt_attrs(cell.attributes)
+          if v then set_valign(cell, v) end
+        end
+      end
+    end
+    for _, row in ipairs(el.head.rows) do
+      for _, cell in ipairs(row.cells) do
+        cell.contents = cell.contents:walk(spanner_filter)
       end
     end
     rows(el.head.rows)
+    -- Header cells sit at the bottom of their row, so spanner rules line up
+    -- when one spanner label wraps and others don't, and labels spanning
+    -- several header rows (e.g., the stub head) sit beside the lowest row.
+    -- Typst takes horizontal and vertical alignment together, so the cell's
+    -- horizontal alignment moves into a `typst:align` attribute.
+    for _, row in ipairs(el.head.rows) do
+      for _, cell in ipairs(row.cells) do
+        local h = halign[tostring(cell.alignment)] or "center"
+        cell.attributes["typst:align"] = h .. " + bottom"
+        cell.alignment = pandoc.AlignDefault
+        -- The template styles only the first table row as a header; with
+        -- spanners there are more header rows (e.g., n and % under each
+        -- spanner), so style every header cell the same way here
+        cell.attributes["typst:fill"] = "dlm-mist"
+        local contents = pandoc.Blocks({
+          pandoc.RawBlock("typst", "#[#set text(weight: 650, fill: dlm-navy)"),
+        })
+        contents:extend(cell.contents)
+        contents:insert(pandoc.RawBlock("typst", "]"))
+        cell.contents = contents
+      end
+    end
     for _, body in ipairs(el.bodies) do
       rows(body.head)
-      rows(body.body)
+      rows(body.body, "horizon")
     end
     rows(el.foot.rows)
+    -- Notes and footnotes (the table footer) are never shaded; otherwise the
+    -- template's zebra striping shades them whenever they land on an even row
+    for _, row in ipairs(el.foot.rows) do
+      for _, cell in ipairs(row.cells) do cell.attributes["typst:fill"] = "none" end
+    end
+    stripe_body(el)
     return el
   end,
 }
@@ -161,10 +326,59 @@ local short_caption_filter = {
   end,
 }
 
-return quarto.utils.combineFilters({
-  quarto.utils.file_metadata_filter(),
-  header_filter,
-  math_alt_filter,
-  gt_table_filter,
-  short_caption_filter,
-})
+-- Continued captions for breakable tables: add an unstyled first header row
+-- holding the template's dlm-continued-caption(), which repeats with the
+-- header and shows "Table N ... (continued)" on every page after the first.
+-- Runs top down so the `breakable` div is seen before the table inside it.
+local pending_breakable = false
+local continued_caption_filter = {
+  traverse = "topdown",
+  Div = function(div)
+    if quarto.doc.is_format("typst") and div.classes:includes("breakable") then
+      pending_breakable = true
+    end
+    return nil
+  end,
+  Table = function(el)
+    if not pending_breakable then return nil end
+    pending_breakable = false
+    -- the template styles row 0 as the header; this row takes its place, so
+    -- give header cells without their own fill (e.g., markdown tables) the
+    -- header style directly
+    for _, row in ipairs(el.head.rows) do
+      for _, cell in ipairs(row.cells) do
+        if not cell.attributes["typst:fill"] then
+          cell.attributes["typst:fill"] = "dlm-mist"
+          local contents = pandoc.Blocks({
+            pandoc.RawBlock("typst", "#[#set text(weight: 650, fill: dlm-navy)"),
+          })
+          contents:extend(cell.contents)
+          contents:insert(pandoc.RawBlock("typst", "]"))
+          cell.contents = contents
+        end
+      end
+    end
+    local cell = pandoc.Cell(
+      { pandoc.RawBlock("typst", "#dlm-continued-caption()") },
+      pandoc.AlignDefault, 1, #el.colspecs,
+      pandoc.Attr("", {}, {
+        ["typst:fill"] = "none",
+        ["typst:inset"] = "0pt",
+        ["typst:align"] = "left",
+      })
+    )
+    el.head.rows:insert(1, pandoc.Row({ cell }))
+    return el
+  end,
+}
+
+return {
+  quarto.utils.combineFilters({
+    quarto.utils.file_metadata_filter(),
+    header_filter,
+    math_alt_filter,
+    gt_table_filter,
+    short_caption_filter,
+  }),
+  continued_caption_filter,
+}

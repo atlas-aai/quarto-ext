@@ -68,6 +68,37 @@
   }
 }
 
+// Continued captions: a breakable table (`classes: breakable`) gets this as
+// an extra first header row, so it repeats on every page the table runs onto.
+// On the table's first page it is empty (the real caption is above the
+// table); on later pages it repeats the caption with "(continued)".
+#let dlm-continued-caption() = context {
+  let figs = query(figure.where(kind: "quarto-float-tbl").before(here()))
+  if figs.len() == 0 { return }
+  let fig = figs.last()
+  if fig.location().page() == here().page() or fig.caption == none { return }
+  let num = numbering(fig.numbering, ..fig.counter.at(fig.location()))
+  // padding, not block spacing: spacing at the end of a table cell is dropped
+  pad(bottom: 10pt, block(width: 100%, {
+    set par(justify: false, leading: 0.6em)
+    set text(weight: 400, fill: dlm-ink)
+    text(weight: 700, fill: dlm-navy)[#fig.supplement #num]
+    h(8pt)
+    fig.caption.body
+    [ (continued)]
+  }))
+}
+
+// Table spanners (gt's tab_spanner()): a rule under the spanner label that
+// covers only its columns. The cell inset leaves a gap between neighboring
+// spanners, so the rules don't connect. The rule is placed rather than drawn
+// as a full-width block: placed content doesn't count when Typst sizes
+// auto-width columns, so the spanner doesn't widen the columns it covers.
+#let dlm-spanner(body) = {
+  pad(bottom: 4pt, body)
+  place(bottom + left, line(length: 100%, stroke: 0.6pt + dlm-navy))
+}
+
 // Parts ------------------------------------------------------------------------
 #let dlm-assets-state = state("dlm-assets", none)
 
@@ -538,7 +569,27 @@
   show table.cell.where(y: 0): set text(weight: 650, fill: dlm-navy)
   show table: set text(number-type: "lining", number-width: "tabular")
   show table: set par(justify: false, leading: 0.55em)
-  show table: it => block(stroke: (bottom: 0.8pt + dlm-navy), it)
+  // Bottom rule: placed after the table so it's drawn on top of the cell
+  // fills. As a block stroke it was drawn underneath them, so a shaded last
+  // row covered half of it and the rule looked lighter on some tables.
+  // The rule is as wide as the table itself, which can be narrower than the page.
+  show table: it => layout(size => {
+    let w = measure(it, width: size.width).width
+    block({
+      it
+      place(bottom + left, line(length: w, stroke: 0.8pt + dlm-navy))
+    })
+  })
+  // Footnote marks in tables (e.g., gt's tab_footnote()): Typst's default
+  // superscript (0.6em) makes symbols like * and † nearly unreadable, and gt
+  // sets the marks in italics, which slants them away from the text. Raise
+  // them at full size and upright instead. `typographic: false` keeps the
+  // font's own (smaller) superscript glyphs from overriding the size.
+  show table: set super(typographic: false, size: 1em)
+  show table: it => {
+    show super: set text(style: "normal")
+    it
+  }
 
   // Code ---------------------------------------------------------------------------
   // Code blocks match the website: plain background, thin border, rounded corners
