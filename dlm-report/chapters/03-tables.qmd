@@ -423,7 +423,7 @@ auc |>
       rows = model == "Year-End" & grade %in% c("10", "11")
     )
   ) |>
-  cols_width(grade ~ pct(25)) |>
+  cols_width(grade ~ px(250)) |>
   opt_footnote_marks(marks = "standard")
 ```
 

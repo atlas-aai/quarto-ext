@@ -89,6 +89,32 @@
   }))
 }
 
+// Table notes (gt's tab_source_note() and tab_footnote()): the filter moves
+// a table's notes out of the table into dlm-table-notes(), right after it.
+// The notes are set at the table's own width (recorded by the table show
+// rule below), so a long note wraps instead of widening the table; the
+// table's bottom rule separates them from the table and a matching rule
+// closes them. (Notes drawn by the table show rule itself would be tagged as
+// part of the table, which PDF/UA rejects.) Footnote marks match the table's,
+// and `size` is the table's font size (gt's tab_options(table.font.size)).
+#let dlm-table-width = state("dlm-table-width", 100%)
+#let dlm-table-notes(size: 1em, notes) = context block(
+  width: dlm-table-width.get(),
+  above: 0pt,
+  inset: (x: 7pt, y: 5pt),
+  stroke: (bottom: 0.8pt + dlm-navy),
+  {
+    set align(left)
+    set text(size: size)
+    set par(justify: false, leading: 0.55em)
+    set block(spacing: 0.45em)
+    set super(typographic: false, size: 1em, baseline: -0.3em)
+    show super: set text(style: "normal")
+    show super: s => if s.body == [\*] { s.body } else { s }
+    notes
+  },
+)
+
 // Table spanners (gt's tab_spanner()): a rule under the spanner label that
 // covers only its columns. The cell inset leaves a gap between neighboring
 // spanners, so the rules don't connect. The rule is placed rather than drawn
@@ -573,21 +599,29 @@
   // fills. As a block stroke it was drawn underneath them, so a shaded last
   // row covered half of it and the rule looked lighter on some tables.
   // The rule is as wide as the table itself, which can be narrower than the page.
-  show table: it => layout(size => {
+  // The width is also recorded for the table's notes (dlm-table-notes()),
+  // which follow directly below (hence no spacing below the table; tables
+  // sit at the end of their figure, so nothing else follows inside it).
+  show table: it => block(below: 0pt, layout(size => {
     let w = measure(it, width: size.width).width
+    dlm-table-width.update(w)
     block({
       it
       place(bottom + left, line(length: w, stroke: 0.8pt + dlm-navy))
     })
-  })
+  }))
   // Footnote marks in tables (e.g., gt's tab_footnote()): Typst's default
   // superscript (0.6em) makes symbols like * and † nearly unreadable, and gt
   // sets the marks in italics, which slants them away from the text. Raise
   // them at full size and upright instead. `typographic: false` keeps the
   // font's own (smaller) superscript glyphs from overriding the size.
-  show table: set super(typographic: false, size: 1em)
+  // Daggers sit on the baseline like letters, so they're raised a little; the
+  // font already draws the asterisk high, so it stays on the baseline (the
+  // website does the same in dlm.scss).
+  show table: set super(typographic: false, size: 1em, baseline: -0.3em)
   show table: it => {
     show super: set text(style: "normal")
+    show super: s => if s.body == [\*] { s.body } else { s }
     it
   }
 

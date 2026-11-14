@@ -212,8 +212,34 @@ local function stripe_body(el)
   end
 end
 
+-- Pandoc's HTML reader gives some gt tables (e.g., with spanners or
+-- footnotes) equal fixed column widths, which squeezes label columns in the
+-- PDF and stretches the table to the full column on the website. Equal widths
+-- that gt did not set (cols_width()) go back to auto widths.
+local function reset_equal_widths(el)
+  local widths, equal = {}, true
+  for i, spec in ipairs(el.colspecs) do
+    widths[i] = spec[2]
+    if type(widths[i]) ~= "number" or math.abs(widths[i] - widths[1]) > 1e-6 then equal = false end
+  end
+  if equal and #widths > 1 then
+    for i, spec in ipairs(el.colspecs) do el.colspecs[i] = { spec[1], nil } end
+  end
+end
+
 local gt_table_filter = {
   Table = function(el)
+    if quarto.doc.is_format("html") and el.classes:includes("gt_table") then
+      reset_equal_widths(el)
+      -- Notes wrap at the table's width instead of widening the table: the
+      -- `dlm-table-note` wrapper is sized in dlm.scss so it adds no width
+      for _, row in ipairs(el.foot.rows) do
+        for _, cell in ipairs(row.cells) do
+          cell.contents = pandoc.Blocks({ pandoc.Div(cell.contents, pandoc.Attr("", { "dlm-table-note" })) })
+        end
+      end
+      return el
+    end
     if not quarto.doc.is_format("typst") then return nil end
     if not el.classes:includes("gt_table") then
       stripe_body(el)
@@ -221,17 +247,7 @@ local gt_table_filter = {
     end
     el = el:walk(html_break_filter)
     clean_gt_attrs(el.attributes)
-    -- Pandoc's HTML reader gives some gt tables (e.g., with spanners or
-    -- footnotes) equal fixed column widths, which squeezes label columns.
-    -- Equal widths that gt did not set (cols_width()) go back to auto widths.
-    local widths, equal = {}, true
-    for i, spec in ipairs(el.colspecs) do
-      widths[i] = spec[2]
-      if type(widths[i]) ~= "number" or math.abs(widths[i] - widths[1]) > 1e-6 then equal = false end
-    end
-    if equal and #widths > 1 then
-      for i, spec in ipairs(el.colspecs) do el.colspecs[i] = { spec[1], nil } end
-    end
+    reset_equal_widths(el)
     local halign = {
       AlignLeft = "left", AlignCenter = "center", AlignRight = "right",
     }
@@ -296,13 +312,37 @@ local gt_table_filter = {
       rows(body.body, "horizon")
     end
     rows(el.foot.rows)
-    -- Notes and footnotes (the table footer) are never shaded; otherwise the
-    -- template's zebra striping shades them whenever they land on an even row
-    for _, row in ipairs(el.foot.rows) do
-      for _, cell in ipairs(row.cells) do cell.attributes["typst:fill"] = "none" end
-    end
     stripe_body(el)
-    return el
+    -- Notes and footnotes (the table footer) move out of the table into the
+    -- template's dlm-table-notes() right after it, which sets them at the
+    -- table's own width. As footer cells, a long note made Typst widen the
+    -- table to fit it.
+    if #el.foot.rows == 0 then return el end
+    -- notes take the table's font size (tab_options(table.font.size = ...)),
+    -- which gt sets as a CSS font-size on the table
+    local size = "1em"
+    local fs = (el.attributes["style"] or ""):match("font%-size%s*:%s*([^;]+)")
+    if fs then
+      local n, unit = fs:match("^%s*([%d%.]+)%s*(%S*)")
+      n = tonumber(n)
+      if n and unit == "%" then size = string.format("%.4fem", n / 100)
+      elseif n and unit == "em" then size = n .. "em"
+      elseif n and unit == "px" then size = string.format("%.2fpt", n * 0.75)
+      elseif n and unit == "pt" then size = n .. "pt" end
+    end
+    local notes = pandoc.Blocks({ pandoc.RawBlock("typst", "#dlm-table-notes(size: " .. size .. ", [") })
+    for _, row in ipairs(el.foot.rows) do
+      for _, cell in ipairs(row.cells) do
+        notes:insert(pandoc.RawBlock("typst", "#block["))
+        notes:extend(cell.contents)
+        notes:insert(pandoc.RawBlock("typst", "]"))
+      end
+    end
+    notes:insert(pandoc.RawBlock("typst", "])"))
+    el.foot.rows = pandoc.List({})
+    local out = pandoc.Blocks({ el })
+    out:extend(notes)
+    return out
   end,
 }
 

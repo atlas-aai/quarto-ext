@@ -150,6 +150,13 @@ main p, main li { max-width: 72ch; }
 .cell-output-display:has(> table), .cell-output-display:has(> .table),
 .quarto-float:has(table) { overflow-x: auto; }
 
+// Tables are as wide as their content (Bootstrap's .table stretches them to
+// the full column), as in the PDF. A table with percentage column widths
+// (e.g., gt's cols_width(x ~ pct(30))) spans the column, since the PDF
+// measures those percentages against the page width.
+main table.table { width: auto; }
+main table.table:has(> colgroup > col[style*="%"]) { width: 100%; }
+
 main table, main .table {
   font-size: 0.88rem;
   font-variant-numeric: tabular-nums lining-nums;
@@ -169,7 +176,6 @@ main table, main .table {
     border-bottom: 2px solid $dlm-heading !important;
     border-top: none;
     vertical-align: bottom;
-    white-space: nowrap;
   }
   tbody tr:nth-child(even) > * { background: $dlm-zebra; }
   tbody tr:hover > * { background: $dlm-accent-soft; }
@@ -182,8 +188,9 @@ main table, main .table {
 // so these restore the report design (and dark mode) for every gt table.
 // Inline styles from gt::tab_style() still win over these.
 main div:has(> table.gt_table) { padding: 0 !important; }
+main .gt_table:has(> colgroup > col[style*="%"]) { width: 100% !important; }
 main .gt_table {
-  width: 100% !important;
+  width: auto !important;
   margin: 0 0 0.5rem !important;
   font-family: inherit !important;
   font-size: 0.88rem !important;
@@ -200,7 +207,26 @@ main .gt_table {
     color: inherit !important;
     border-color: $dlm-border !important;
   }
-  .gt_footnote, .gt_sourcenote { color: $dlm-muted !important; font-size: 0.85em !important; }
+  // Notes are left aligned; otherwise they inherit Quarto's centering of
+  // figure contents (`.quarto-figure-center`)
+  .gt_footnote, .gt_sourcenote {
+    color: $dlm-muted !important;
+    font-size: 0.85em !important;
+    text-align: left !important;
+  }
+  // A note adds no width of its own, so it wraps at the table's width
+  // instead of widening the table (the wrapper is added in
+  // dlm-book-typst.lua)
+  .dlm-table-note { width: 0; min-width: 100%; }
+  // Footnote marks (tab_footnote()): gt sets them italic in a <sup>, which
+  // shrinks symbols like * and † until they're hard to read. Set them upright
+  // at full size instead, as in the PDF. Daggers sit on the baseline like
+  // letters, so they're raised a little; the font already draws the asterisk
+  // high, so it stays on the baseline.
+  .gt_footnote_marks { font-style: normal !important; }
+  // (Bootstrap raises <sup> with `top`, so the height is set there)
+  .gt_footnote_marks sup { font-size: 1em; vertical-align: baseline; top: -0.3em; }
+  .gt_footnote_marks.gt_asterisk sup { top: 0; }
   .gt_col_headings, .gt_table_body { border-top: none !important; border-bottom: none !important; }
   .gt_col_heading, .gt_column_spanner_outer {
     background-color: $dlm-table-head !important;
@@ -212,6 +238,14 @@ main .gt_table {
     border-bottom: 2px solid $dlm-heading !important;
   }
   .gt_column_spanner { border-bottom-color: $dlm-heading !important; }
+  // The spanner's underline is on its label (above); without this, the
+  // header-row rule for `thead th` adds a second line under the spanner
+  .gt_column_spanner_outer { border-bottom: none !important; }
+  // gt insets spanner underlines by 4px on each side, which leaves a gap
+  // between neighboring spanners, but drops the inset at the table's edges;
+  // keep it there too so the first and last underlines match the others
+  .gt_column_spanner_outer:first-child { padding-left: 4px !important; }
+  .gt_column_spanner_outer:last-child { padding-right: 4px !important; }
   .gt_group_heading, .gt_empty_group_heading {
     background-color: $dlm-surface-2 !important;
     color: $dlm-heading !important;
