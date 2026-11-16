@@ -12,13 +12,13 @@ Requires Quarto 1.9.17 or later (tested with Quarto 1.10.20 and Typst 0.15). No 
 ## Start a new report
 
 ```bash
-quarto use template <org>/dlm-report
+quarto use template atlas-aai/quarto-ext/dlm-report
 ```
 
-This copies the extension and the starter technical manual in this repository. To add the extension to an existing project instead:
+This copies the extension and the starter technical manual in the repository. To add the extension to an existing project instead:
 
 ```bash
-quarto add <org>/dlm-report
+quarto add atlas-aai/quarto-ext/dlm-report
 ```
 
 Render both formats with `quarto render`. The website and the PDF land in `_book/`. Use `quarto preview` while writing.
