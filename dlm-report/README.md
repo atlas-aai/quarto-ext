@@ -119,7 +119,7 @@ This `r if (dlm_is_pdf()) "document is" else "website hosts"` the technical manu
 ## What is in the extension
 
 ```
-_extensions/dlm-report/
+_extensions/atlas-aai/dlm-report/
 ├── _extension.yml        format definitions
 ├── dlm-report.lua        DLM metadata defaults, HTML assets, Typst asset paths, reference-list styling
 ├── dlm-book-typst.lua    part and appendix handling for Typst books

@@ -12,9 +12,9 @@ book:
   downloads: [pdf]
   search: true
   site-url: https://dynamiclearningmaps.org
-  favicon: _extensions/dlm-report/assets/favicon.png
+  favicon: _extensions/atlas-aai/dlm-report/assets/favicon.png
   navbar:
-    logo: _extensions/dlm-report/assets/dlm-logo-white.png
+    logo: _extensions/atlas-aai/dlm-report/assets/dlm-logo-white.png
     logo-alt: "Dynamic Learning Maps"
     title: false
   sidebar:

@@ -21,7 +21,7 @@ source("R/dlm-theme.R")
 # installed, register the copy bundled with the extension; ragg can draw
 # registered fonts.
 if (!"Atkinson Hyperlegible Next" %in% systemfonts::system_fonts()$family) {
-  font_dir <- "_extensions/dlm-report/fonts/ttf"
+  font_dir <- "_extensions/atlas-aai/dlm-report/fonts/ttf"
   systemfonts::register_font(
     name = "Atkinson Hyperlegible Next",
     plain = file.path(font_dir, "AtkinsonHyperlegibleNext-Regular.ttf"),
